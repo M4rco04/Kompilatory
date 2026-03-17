@@ -1,3 +1,7 @@
+# Język implementacji
+
+Python
+
 # Zbiór tokenów
 
 | Typ Tokenu | Automat           | Regex                | Opis wzorca                                      |
