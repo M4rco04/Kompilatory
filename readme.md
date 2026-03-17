@@ -1,10 +1,12 @@
-Zbiór tokenów
-RegexTyp Tokenu (Token)AutomatRegexOpis wzorca
-NUMBERnumber_automat[0-9]+Jedna lub więcej cyfr.
-IDid_automat[a-zA-Z][a-zA-Z0-9]*Litera, po której następuje dowolna liczba liter lub cyfr.
-PLUSplus_automat\+Dosłownie znak plusa.
-MINUSminus_automat-Dosłownie znak minusa.
-MULmul_automat\*Dosłownie znak gwiazdki (mnożenia).
-DIVdiv_automat/Dosłownie ukośnik (dzielenia).
-LPARENlparen_automat\(Nawias otwierający.
-RPARENrparen_automat\)Nawias zamykający.
+# Zbiór tokenów
+
+| Typ Tokenu | Automat           | Regex                | Opis wzorca                                      |
+|------------|------------------|----------------------|--------------------------------------------------|
+| NUMBER     | number_automat   | `[0-9]+`             | Jedna lub więcej cyfr.                          |
+| ID         | id_automat       | `[a-zA-Z][a-zA-Z0-9]*` | Litera, po której następuje dowolna liczba liter lub cyfr. |
+| PLUS       | plus_automat     | `\+`                 | Dosłownie znak plusa.                           |
+| MINUS      | minus_automat    | `-`                  | Dosłownie znak minusa.                          |
+| MUL        | mul_automat      | `\*`                 | Dosłownie znak gwiazdki (mnożenia).             |
+| DIV        | div_automat      | `/`                  | Dosłownie ukośnik (dzielenia).                  |
+| LPAREN     | lparen_automat   | `\(`                 | Nawias otwierający.                             |
+| RPAREN     | rparen_automat   | `\)`                 | Nawias zamykający.                              |
