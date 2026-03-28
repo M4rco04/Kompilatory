@@ -12,7 +12,7 @@ Python
 | HEXNUMBER | | `0[xX](?:_?[0-9a-fA-F])+` | Liczba szesnastkowa |
 | ID         | id_automat       | `[a-zA-Z_][a-zA-Z0-9_]*` | Litera, po której następuje dowolna liczba liter lub cyfr |
 | SPECIAL | | `(if)\|(else)\|(for)\|(while)\|(def)\|(class)\|(return)\|(True)\|(False)\|(None)` | Słowa kluczowe |
-| STRING || `(".*")\|('.*')\|(""".*""")` | Komentarz |
+| STRING || `(".*")\|('.*')\|(""".*""")` | Text |
 | PLUS       | plus_automat     | `+`                 | Znak plusa                         |
 | MINUS      | minus_automat    | `-`                  | Znak minusa                         |
 | MUL        | mul_automat      | `*`                 | Mnożenie        |
