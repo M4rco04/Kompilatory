@@ -1,5 +1,3 @@
-Oto poprawiona i uporządkowana wersja Twojego pliku w formacie **Markdown (.md)**:
-
 ---
 
 # 🚀 Jak uruchomić projekt
