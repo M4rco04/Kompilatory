@@ -1,29 +1,119 @@
-#🚀 Jak uruchomić projekt
+Oto poprawiona i uporządkowana wersja Twojego pliku w formacie **Markdown (.md)**:
+
+---
+
+# 🚀 Jak uruchomić projekt
+
 Możesz uruchomić skaner na dwa sposoby:
 
-1. Tryb analizy pliku (Zalecany)
-Jeśli masz już plik z kodem (np. test.py), przekaż jego nazwę jako argument wiersza poleceń:
+## 1. Tryb analizy pliku (zalecany)
 
-Bash
+Jeśli masz już plik z kodem (np. `test.py`), przekaż jego nazwę jako argument wiersza poleceń:
+
+```bash
 python main.py test.py
-Program natychmiast wczyta plik, wyświetli listę tokenów w konsoli i wygeneruje obok plik pokolorowany_kod.html.
+```
 
-2. Tryb interaktywny (Konsola)
-Jeśli uruchomisz skrypt bez żadnych argumentów:
+Program:
 
-Bash
+* wczyta plik,
+* wyświetli listę tokenów w konsoli,
+* wygeneruje plik `pokolorowany_kod.html`.
+
+---
+
+## 2. Tryb interaktywny (konsola)
+
+Uruchom skrypt bez argumentów:
+
+```bash
 python main.py
-Program poprosi Cię o wpisanie lub wklejenie kodu bezpośrednio do konsoli. Ponieważ kod może mieć wiele linijek, po zakończeniu wpisywania należy wysłać sygnał końca pliku (EOF):
+```
 
-Na systemie Windows: Wciśnij Ctrl + Z, a następnie Enter.
+Program poprosi o wpisanie lub wklejenie kodu bezpośrednio do konsoli.
 
-Na systemie Linux / macOS: Wciśnij Ctrl + D.
+### Zakończenie wprowadzania (EOF)
 
-#⚙️ Generowanie HTML (Syntax Highlighting)
-Po każdym pomyślnym przeskanowaniu kodu, program automatycznie wygeneruje plik pokolorowany_kod.html w katalogu głównym. Otwórz ten plik w dowolnej przeglądarce internetowej, aby zobaczyć kod z nałożonym profesjonalnym motywem kolorystycznym.
+* **Windows**: `Ctrl + Z`, następnie `Enter`
+* **Linux / macOS**: `Ctrl + D`
 
-# Język implementacji
+---
 
-Python
+# ⚙️ Generowanie HTML (Syntax Highlighting)
 
-📚 Zbiór tokenów i architekturaSkaner opiera się na ręcznie zdefiniowanych automatach. Do obsługi stałych fragmentów (np. operatory, słowa kluczowe) używana jest dynamiczna funkcja _create_exact.Typ TokenuAutomatRegex (Odpowiednik)Opis wzorcaFLOATNUMBERfloat_automat(?:\d+(?:_\d+)*)?\.\d+(?:_\d+)*(?:[eE][+-]?\d+(?:_\d+)*)?|\d+(?:_\d+)*[eE][+-]?\d+(?:_\d+)*Liczba zmiennoprzecinkowa (z notacją naukową)NUMBERfloat_automat\d+(?:_\d+)*Zwykła liczba całkowita (dziesiętna)BINNUMBERbin_automat0[bB](?:_?[01])+Liczba binarnaOCTNUMBERoct_automat0[oO](?:_?[0-7])+Liczba ósemkowaHEXNUMBERhex_automat0[xX](?:_?[0-9a-fA-F])+Liczba szesnastkowaIDid_automat[a-zA-Z_][a-zA-Z0-9_]*Litery i cyfry, zaczynające się od litery lub _SPECIAL_create_exact\b(?:if|else|for|while|def|class|return|True|False|None)\bSłowa kluczowe języka PythonFSTRINGfstring_automat(Wymaga stosu)F-stringi z obsługą zagnieżdżeń (PDA)STRINGstring_automat""".*?"""|'''.*?'''|".*?"|'.*?'Ciągi znaków (napisy)PLUS_create_exact\+Znak plusaMINUS_create_exact-Znak minusaMUL_create_exact\*MnożenieDIV_create_exact/DzielenieDOUBLESLASH_create_exact//Dzielenie całkowiteDOUBLESTAR_create_exact\*\*PotęgowaniePERCENT_create_exact%Modulo, reszta z dzieleniaLPAREN_create_exact\(Nawias otwierający okrągłyRPAREN_create_exact\)Nawias zamykający okrągłyLSQB_create_exact\[Nawias otwierający kwadratowyRSQB_create_exact\]Nawias zamykający kwadratowyLBRACE_create_exact\{Klamra otwierającaRBRACE_create_exact\}Klamra zamykającaEQUAL_create_exact=PrzypisaniePLUSEQUAL_create_exact\+=Przypisanie z dodaniemMINUSEQUAL_create_exact-=Przypisanie z odejmowaniemMULEQUAL_create_exact\*=Przypisanie z mnożeniemDIVEQUAL_create_exact/=Przypisanie z dzieleniemDOUBLESLASHEQUAL_create_exact//=Przypisanie z dzieleniem całkowitymCOMPARISON_create_exact==Porównanie wartościNOTEQUAL_create_exact!=NierówneLESS_create_exact<MniejszeLESSEQUAL_create_exact<=Mniejsze lub równeGREATER_create_exact>WiększeGREATEREQUAL_create_exact>=Większe lub równeCOLON_create_exact:DwukropekCOMMA_create_exact,PrzecinekDOT_create_exact\.KropkaBITAND_create_exact&Bitowe ANDBITOR_create_exact|Bitowe ORNEWLINEnewline_automat\n|\r\nEnter (Logiczny koniec linii)INDENTindent_automat\tTabulatorSPACEspace_automat[ \f\v]+SpacjaCOMMENTcomment_automat#.*Komentarz jednowierszowyERROR(Fallback).Błąd leksykalny (Nierozpoznany znak)
+Po każdym skanowaniu program automatycznie generuje plik:
+
+```
+pokolorowany_kod.html
+```
+
+Otwórz go w przeglądarce, aby zobaczyć kod z kolorowaniem składni.
+
+---
+
+# 🐍 Język implementacji
+
+**Python**
+
+---
+
+# 📚 Zbiór tokenów i architektura
+
+Skaner opiera się na ręcznie zdefiniowanych automatach.
+Do obsługi stałych fragmentów (np. operatorów i słów kluczowych) używana jest funkcja:
+
+```
+_create_exact
+```
+
+---
+
+## 🧩 Typy tokenów
+
+| Typ Tokenu       | Automat           | Regex (odpowiednik)                                                                              | Opis                           |
+| ---------------- | ----------------- | ------------------------------------------------------------------------------------------------ | ------------------------------ |
+| FLOATNUMBER      | `float_automat`   | `(?:\d+(?:_\d+)*)?\.\d+(?:_\d+)*(?:[eE][+-]?\d+(?:_\d+)*)? \| \d+(?:_\d+)*[eE][+-]?\d+(?:_\d+)*` | Liczba zmiennoprzecinkowa      |
+| NUMBER           | `float_automat`   | `\d+(?:_\d+)*`                                                                                   | Liczba całkowita               |
+| BINNUMBER        | `bin_automat`     | `0[bB](?:_?[01])+`                                                                               | Liczba binarna                 |
+| OCTNUMBER        | `oct_automat`     | `0[oO](?:_?[0-7])+`                                                                              | Liczba ósemkowa                |
+| HEXNUMBER        | `hex_automat`     | `0[xX](?:_?[0-9a-fA-F])+`                                                                        | Liczba szesnastkowa            |
+| ID               | `id_automat`      | `[a-zA-Z_][a-zA-Z0-9_]*`                                                                         | Identyfikator                  |
+| SPECIAL          | `_create_exact`   | `\b(?:if\|else\|for\|while\|def\|class\|return\|True\|False\|None)\b`                            | Słowa kluczowe                 |
+| FSTRING          | `fstring_automat` | —                                                                                                | F-string (obsługa stosu / PDA) |
+| STRING           | `string_automat`  | `""".*?""" \| '''.*?''' \| ".*?" \| '.*?'`                                                       | Napisy                         |
+| PLUS             | `_create_exact`   | `\+`                                                                                             | Plus                           |
+| MINUS            | `_create_exact`   | `-`                                                                                              | Minus                          |
+| MUL              | `_create_exact`   | `\*`                                                                                             | Mnożenie                       |
+| DIV              | `_create_exact`   | `/`                                                                                              | Dzielenie                      |
+| DOUBLESLASH      | `_create_exact`   | `//`                                                                                             | Dzielenie całkowite            |
+| DOUBLESTAR       | `_create_exact`   | `\*\*`                                                                                           | Potęgowanie                    |
+| PERCENT          | `_create_exact`   | `%`                                                                                              | Modulo                         |
+| LPAREN           | `_create_exact`   | `\(`                                                                                             | `(`                            |
+| RPAREN           | `_create_exact`   | `\)`                                                                                             | `)`                            |
+| LSQB             | `_create_exact`   | `\[`                                                                                             | `[`                            |
+| RSQB             | `_create_exact`   | `\]`                                                                                             | `]`                            |
+| LBRACE           | `_create_exact`   | `\{`                                                                                             | `{`                            |
+| RBRACE           | `_create_exact`   | `\}`                                                                                             | `}`                            |
+| EQUAL            | `_create_exact`   | `=`                                                                                              | Przypisanie                    |
+| PLUSEQUAL        | `_create_exact`   | `\+=`                                                                                            | `+=`                           |
+| MINUSEQUAL       | `_create_exact`   | `-=`                                                                                             | `-=`                           |
+| MULEQUAL         | `_create_exact`   | `\*=`                                                                                            | `*=`                           |
+| DIVEQUAL         | `_create_exact`   | `/=`                                                                                             | `/=`                           |
+| DOUBLESLASHEQUAL | `_create_exact`   | `//=`                                                                                            | `//=`                          |
+| COMPARISON       | `_create_exact`   | `==`                                                                                             | Porównanie                     |
+| NOTEQUAL         | `_create_exact`   | `!=`                                                                                             | Różne                          |
+| LESS             | `_create_exact`   | `<`                                                                                              | Mniejsze                       |
+| LESSEQUAL        | `_create_exact`   | `<=`                                                                                             | ≤                              |
+| GREATER          | `_create_exact`   | `>`                                                                                              | Większe                        |
+| GREATEREQUAL     | `_create_exact`   | `>=`                                                                                             | ≥                              |
+| COLON            | `_create_exact`   | `:`                                                                                              | Dwukropek                      |
+| COMMA            | `_create_exact`   | `,`                                                                                              | Przecinek                      |
+| DOT              | `_create_exact`   | `\.`                                                                                             | Kropka                         |
+| BITAND           | `_create_exact`   | `&`                                                                                              | AND                            |
+| BITOR            | `_create_exact`   | `\|`                                                                                             | OR                             |
+| NEWLINE          | `newline_automat` | `\n \| \r\n`                                                                                     | Nowa linia                     |
+| INDENT           | `indent_automat`  | `\t`                                                                                             | Tabulator                      |
+| SPACE            | `space_automat`   | `[ \f\v]+`                                                                                       | Spacja                         |
+| COMMENT          | `comment_automat` | `#.*`                                                                                            | Komentarz                      |
+| ERROR            | —                 | `.`                                                                                              | Błąd leksykalny                |
+---
