@@ -27,8 +27,9 @@ Python
 | MULEQUAL | | `*=` | Przypisanie z mnożeniem |
 | DIVEQUAL | | `/=` | Przypisanie z dzieleniem |
 | DOUBLESLASHEQUAL | | `//=` | Przypisanie z dzieleniem całkowitym |
+| COMPARISON | | `==` | Porównanie wartości |
 | NEWLINE | | `\n` | Enter |
 | INDENT | | `\t` | Tabulator |
 | SPACE | | `\s` | Spacja |
 | ERROR | | | Błąd |
-| COMMENT | | `(#.*)\|'''.*'''` | Komentarz |
+| COMMENT | | `(#.*)\|('''.*''')` | Komentarz |
