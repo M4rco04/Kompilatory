@@ -75,7 +75,7 @@ _create_exact
 | HEXNUMBER        | `hex_automat`     | `0[xX](?:_?[0-9a-fA-F])+`                                                                        | Liczba szesnastkowa            |
 | ID               | `id_automat`      | `[a-zA-Z_][a-zA-Z0-9_]*`                                                                         | Identyfikator                  |
 | SPECIAL          | `_create_exact`   | `\b(?:if\|else\|for\|while\|def\|class\|return\|True\|False\|None)\b`                            | Słowa kluczowe                 |
-| FSTRING          | `fstring_automat` | —                                                                                                | F-string (obsługa stosu / PDA) |
+| FSTRING          | `fstring_automat` |                                                                                                 | F-string (obsługa stosu / PDA) |
 | STRING           | `string_automat`  | `""".*?""" \| '''.*?''' \| ".*?" \| '.*?'`                                                       | Napisy                         |
 | PLUS             | `_create_exact`   | `+`                                                                                             | Plus                           |
 | MINUS            | `_create_exact`   | `-`                                                                                              | Minus                          |
