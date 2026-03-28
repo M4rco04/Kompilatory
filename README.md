@@ -31,4 +31,4 @@ Python
 | INDENT | | `\t` | Tabulator |
 | SPACE | | `\s` | Spacja |
 | ERROR | | | Błąd |
-| COMMENT | | `(#.*)|'''.*'''` | Komentarz |
+| COMMENT | | `(#.*)\|'''.*'''` | Komentarz |
