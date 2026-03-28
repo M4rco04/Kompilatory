@@ -6,7 +6,7 @@ Python
 
 | Typ Tokenu | Automat           | Regex                | Opis wzorca                                      |
 |------------|------------------|----------------------|--------------------------------------------------|
-| NUMBER     | number_automat   | `[0-9]+|`             | Jedna lub więcej cyfr                          |
+| NUMBER     | number_automat   | `\d+(?:\.\d+)?`             | Liczba |
 | ID         | id_automat       | `[a-zA-Z_][a-zA-Z0-9_]*` | Litera, po której następuje dowolna liczba liter lub cyfr |
 | PLUS       | plus_automat     | `+`                 | Znak plusa                         |
 | MINUS      | minus_automat    | `-`                  | Znak minusa                         |
@@ -28,6 +28,16 @@ Python
 | DIVEQUAL | | `/=` | Przypisanie z dzieleniem |
 | DOUBLESLASHEQUAL | | `//=` | Przypisanie z dzieleniem całkowitym |
 | COMPARISON | | `==` | Porównanie wartości |
+| NOTEQUAL | | `!=` | Nierówne |
+| LESS | | `<` | Mniejsze |
+| LESSEQUAL | | `<=` | Mniejsze lub równe |
+| GREATER | | `>` | Większe |
+| GREATEREQUAL | | `>=` | Większe lub równe |
+| COLON | | `:` | Dwukropek |
+| COMMA | | `,` | Przecinek |
+| DOT | | `\.` | Kropka |
+| BITAND | | `&` | Bitowe AND |
+| BITOR | | `\|` | Bitowe OR |
 | NEWLINE | | `\n` | Enter |
 | INDENT | | `\t` | Tabulator |
 | SPACE | | `\s` | Spacja |
