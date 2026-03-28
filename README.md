@@ -1,4 +1,4 @@
-📁 Struktura projektu
+# 📁 Struktura projektu
 
 Kolorowanie składni/ - folder, w którym znajduje się program do kolorowania składni dla języka Python.
 
