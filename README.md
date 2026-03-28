@@ -9,8 +9,10 @@ Python
 | FLOATNUMBER     | number_automat   | `(?:\d+(?:_\d+)*)?\.\d+(?:_\d+)*(?:[eE][+-]?\d+(?:_\d+)*)?\|\d+(?:_\d+)*[eE][+-]?\d+(?:_\d+)*`             | Liczba zmiennoprzecinkowa (z notacją naukową) |
 | BINNUMBER | | `0[bB](?:_?[01])+` | Liczba binarna |
 | OCTNUMBER | | `0[oO](?:_?[0-7])+` | Liczba ósemkowa |
-| HEXNUMBER | | `0[xX](?:+?[0-9a-fA-F])+` | Liczba szesnastkowa |
+| HEXNUMBER | | `0[xX](?:_?[0-9a-fA-F])+` | Liczba szesnastkowa |
 | ID         | id_automat       | `[a-zA-Z_][a-zA-Z0-9_]*` | Litera, po której następuje dowolna liczba liter lub cyfr |
+| SPECIAL | | `(if)\|(else)\|(for)\|(while)\|(def)\|(class)\|(return)\|(True)\|(False)\|(None)` | Słowa kluczowe |
+| STRING || `(".*")\|('.*')\|(""".*""")` | Komentarz |
 | PLUS       | plus_automat     | `+`                 | Znak plusa                         |
 | MINUS      | minus_automat    | `-`                  | Znak minusa                         |
 | MUL        | mul_automat      | `*`                 | Mnożenie        |
@@ -45,4 +47,4 @@ Python
 | INDENT | | `\t` | Tabulator |
 | SPACE | | `\s` | Spacja |
 | ERROR | | | Błąd |
-| COMMENT | | `(#.*)\|('''.*''')` | Komentarz |
+| COMMENT | | `#.*` | Komentarz |
