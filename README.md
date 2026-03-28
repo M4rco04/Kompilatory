@@ -1,4 +1,4 @@
-🚀 Jak uruchomić projekt
+#🚀 Jak uruchomić projekt
 Możesz uruchomić skaner na dwa sposoby:
 
 1. Tryb analizy pliku (Zalecany)
@@ -19,7 +19,7 @@ Na systemie Windows: Wciśnij Ctrl + Z, a następnie Enter.
 
 Na systemie Linux / macOS: Wciśnij Ctrl + D.
 
-⚙️ Generowanie HTML (Syntax Highlighting)
+#⚙️ Generowanie HTML (Syntax Highlighting)
 Po każdym pomyślnym przeskanowaniu kodu, program automatycznie wygeneruje plik pokolorowany_kod.html w katalogu głównym. Otwórz ten plik w dowolnej przeglądarce internetowej, aby zobaczyć kod z nałożonym profesjonalnym motywem kolorystycznym.
 
 # Język implementacji
