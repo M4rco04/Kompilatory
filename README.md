@@ -1,5 +1,3 @@
----
-
 # 🚀 Jak uruchomić projekt
 
 Możesz uruchomić skaner na dwa sposoby:
