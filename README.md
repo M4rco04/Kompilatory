@@ -6,7 +6,7 @@ Python
 
 | Typ Tokenu | Automat           | Regex                | Opis wzorca                                      |
 |------------|------------------|----------------------|--------------------------------------------------|
-| NUMBER     | number_automat   | `\d+(?:\.\d+)?`             | Liczba |
+| FLOATNUMBER     | number_automat   | `(?:\d+(?:_\d+)*)?\.\d+(?:_\d+)*(?:[eE][+-]?\d+(?:_\d+)*)?\|\d+(?:_\d+)*[eE][+-]?\d+(?:_\d+)*`             | Liczba |
 | ID         | id_automat       | `[a-zA-Z_][a-zA-Z0-9_]*` | Litera, po której następuje dowolna liczba liter lub cyfr |
 | PLUS       | plus_automat     | `+`                 | Znak plusa                         |
 | MINUS      | minus_automat    | `-`                  | Znak minusa                         |
