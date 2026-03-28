@@ -91,9 +91,9 @@ _create_exact
 | LBRACE           | `_create_exact`   | `{`                                                                                             | `{`                            |
 | RBRACE           | `_create_exact`   | `}`                                                                                             | `}`                            |
 | EQUAL            | `_create_exact`   | `=`                                                                                              | Przypisanie                    |
-| PLUSEQUAL        | `_create_exact`   | `\+=`                                                                                            | `+=`                           |
+| PLUSEQUAL        | `_create_exact`   | `+=`                                                                                            | `+=`                           |
 | MINUSEQUAL       | `_create_exact`   | `-=`                                                                                             | `-=`                           |
-| MULEQUAL         | `_create_exact`   | `\*=`                                                                                            | `*=`                           |
+| MULEQUAL         | `_create_exact`   | `*=`                                                                                            | `*=`                           |
 | DIVEQUAL         | `_create_exact`   | `/=`                                                                                             | `/=`                           |
 | DOUBLESLASHEQUAL | `_create_exact`   | `//=`                                                                                            | `//=`                          |
 | COMPARISON       | `_create_exact`   | `==`                                                                                             | Porównanie                     |
@@ -104,7 +104,7 @@ _create_exact
 | GREATEREQUAL     | `_create_exact`   | `>=`                                                                                             | ≥                              |
 | COLON            | `_create_exact`   | `:`                                                                                              | Dwukropek                      |
 | COMMA            | `_create_exact`   | `,`                                                                                              | Przecinek                      |
-| DOT              | `_create_exact`   | `\.`                                                                                             | Kropka                         |
+| DOT              | `_create_exact`   | `.`                                                                                             | Kropka                         |
 | BITAND           | `_create_exact`   | `&`                                                                                              | AND                            |
 | BITOR            | `_create_exact`   | `\|`                                                                                             | OR                             |
 | NEWLINE          | `newline_automat` | `\n \| \r\n`                                                                                     | Nowa linia                     |
