@@ -77,19 +77,19 @@ _create_exact
 | SPECIAL          | `_create_exact`   | `\b(?:if\|else\|for\|while\|def\|class\|return\|True\|False\|None)\b`                            | Słowa kluczowe                 |
 | FSTRING          | `fstring_automat` | —                                                                                                | F-string (obsługa stosu / PDA) |
 | STRING           | `string_automat`  | `""".*?""" \| '''.*?''' \| ".*?" \| '.*?'`                                                       | Napisy                         |
-| PLUS             | `_create_exact`   | `\+`                                                                                             | Plus                           |
+| PLUS             | `_create_exact`   | `+`                                                                                             | Plus                           |
 | MINUS            | `_create_exact`   | `-`                                                                                              | Minus                          |
-| MUL              | `_create_exact`   | `\*`                                                                                             | Mnożenie                       |
+| MUL              | `_create_exact`   | `*`                                                                                             | Mnożenie                       |
 | DIV              | `_create_exact`   | `/`                                                                                              | Dzielenie                      |
 | DOUBLESLASH      | `_create_exact`   | `//`                                                                                             | Dzielenie całkowite            |
-| DOUBLESTAR       | `_create_exact`   | `\*\*`                                                                                           | Potęgowanie                    |
+| DOUBLESTAR       | `_create_exact`   | `**`                                                                                           | Potęgowanie                    |
 | PERCENT          | `_create_exact`   | `%`                                                                                              | Modulo                         |
-| LPAREN           | `_create_exact`   | `\(`                                                                                             | `(`                            |
-| RPAREN           | `_create_exact`   | `\)`                                                                                             | `)`                            |
-| LSQB             | `_create_exact`   | `\[`                                                                                             | `[`                            |
-| RSQB             | `_create_exact`   | `\]`                                                                                             | `]`                            |
-| LBRACE           | `_create_exact`   | `\{`                                                                                             | `{`                            |
-| RBRACE           | `_create_exact`   | `\}`                                                                                             | `}`                            |
+| LPAREN           | `_create_exact`   | `(`                                                                                             | `(`                            |
+| RPAREN           | `_create_exact`   | `)`                                                                                             | `)`                            |
+| LSQB             | `_create_exact`   | `[`                                                                                             | `[`                            |
+| RSQB             | `_create_exact`   | `]`                                                                                             | `]`                            |
+| LBRACE           | `_create_exact`   | `{`                                                                                             | `{`                            |
+| RBRACE           | `_create_exact`   | `}`                                                                                             | `}`                            |
 | EQUAL            | `_create_exact`   | `=`                                                                                              | Przypisanie                    |
 | PLUSEQUAL        | `_create_exact`   | `\+=`                                                                                            | `+=`                           |
 | MINUSEQUAL       | `_create_exact`   | `-=`                                                                                             | `-=`                           |
