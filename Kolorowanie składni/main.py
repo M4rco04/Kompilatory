@@ -1,4 +1,5 @@
 from utility.skaner import Skaner
+from utility.html_generator import HtmlGenerator
 import sys
 
 
@@ -8,7 +9,7 @@ def main():
     if len(sys.argv) > 1:
         filename = sys.argv[1]
         try:
-            with open(filename, 'r', encoding='utf-8') as file:
+            with open(filename, "r", encoding="utf-8") as file:
                 expression = file.read()
             print(f"--- Wczytano plik: {filename} ---")
         except FileNotFoundError:
@@ -19,7 +20,9 @@ def main():
             return
     else:
         print("Wprowadź kod do przeskanowania.")
-        print("(Aby zakończyć wprowadzanie, wciśnij Ctrl+Z i Enter na Windowsie lub Ctrl+D na Mac/Linux):\n")
+        print(
+            "(Aby zakończyć wprowadzanie, wciśnij Ctrl+Z i Enter na Windowsie lub Ctrl+D na Mac/Linux):\n"
+        )
         try:
             expression = sys.stdin.read()
             print("\n--- Rozpoczynam skanowanie ---")
@@ -34,7 +37,8 @@ def main():
 
     try:
         skaner.loop()
-        print(skaner)
+        generator = HtmlGenerator(skaner.tokens)
+        generator.generate("pokolorowany_kod.html")
     except Exception as e:
         print(f"Błąd podczas skanowania: {e}")
 

@@ -9,6 +9,8 @@ class Skaner:
         self.tokens: List[Tuple[Token, str]] = []
         self.expression: str = expression
 
+        self.fstring_stack: List[str] = []
+
         self._config: List[Tuple[Token, Callable[[str, int], None]]] = [
             (Token.SPECIAL, self._create_exact("if")),
             (Token.SPECIAL, self._create_exact("else")),
@@ -24,6 +26,7 @@ class Skaner:
             (Token.HEXNUMBER, self.hex_automat),
             (Token.BINNUMBER, self.bin_automat),
             (Token.OCTNUMBER, self.oct_automat),
+            (Token.FSTRING, self.fstring_automat),
             (Token.ID, self.id_automat),
             (Token.STRING, self.string_automat),
             (Token.COMMENT, self.comment_automat),
@@ -59,7 +62,6 @@ class Skaner:
             (Token.DOT, self._create_exact(".")),
             (Token.NEWLINE, self._create_exact("\n")),
             (Token.INDENT, self._create_exact("\t")),
-
             (Token.SPACE, self.space_automat),
             (Token.NEWLINE, self.newline_automat),
             (Token.INDENT, self.indent_automat),
@@ -118,6 +120,7 @@ class Skaner:
 
     def reset_states(self):
         self.states = [0] * len(self.automats)
+        self.fstring_stack.clear()
 
     """
     Logiczna definicja automatu
@@ -247,6 +250,64 @@ class Skaner:
         else:
             self.states[idx] = 3
 
+    def fstring_automat(self, char: str, idx: int) -> None:
+        state = self.states[idx]
+
+        if state in (1, 3):
+            self.states[idx] = 3
+            return
+
+        if state == 0:
+            self.states[idx] = 4 if char in 'fF' else 3
+            return
+
+        if state == 4:
+            if char in '"\'':
+                self.fstring_stack.append(char)
+                self.states[idx] = 5
+            else:
+                self.states[idx] = 3
+            return
+
+        if state == 5:
+            top = self.fstring_stack[-1]
+            if char == top:
+                self.fstring_stack.pop()
+                if not self.fstring_stack:
+                    self.states[idx] = 1
+                else:
+                    self.states[idx] = 3
+            elif char == '{':
+                self.fstring_stack.append('{')
+                self.states[idx] = 6
+            return
+
+        if state == 6:
+            top = self.fstring_stack[-1]
+
+            if char in '"\'':
+                self.fstring_stack.append(char)
+                self.states[idx] = 7
+            elif char in '{[(':
+                self.fstring_stack.append(char)
+            elif char in '}])':
+                pairs = {'}': '{', ']': '[', ')': '('}
+
+                if top == pairs.get(char):
+                    self.fstring_stack.pop()
+                    if len(self.fstring_stack) == 1 and self.fstring_stack[0] in '"\'':
+                        self.states[idx] = 5
+                else:
+                    self.states[idx] = 3
+            return
+
+        if state == 7:
+            top = self.fstring_stack[-1]
+            if char == top:
+                self.fstring_stack.pop()
+                self.states[idx] = 6
+            return
+
     def comment_automat(self, char: str, idx: int) -> None:
         state = self.states[idx]
         if state == 0:
@@ -266,21 +327,21 @@ class Skaner:
     def indent_automat(self, char: str, idx: int) -> None:
         state = self.states[idx]
         if state in (0, 1):
-            self.states[idx] = 1 if char == '\t' else 3
+            self.states[idx] = 1 if char == "\t" else 3
         else:
             self.states[idx] = 3
 
     def newline_automat(self, char: str, idx: int) -> None:
         state = self.states[idx]
         if state == 0:
-            if char == '\n':
+            if char == "\n":
                 self.states[idx] = 1
-            elif char == '\r':
+            elif char == "\r":
                 self.states[idx] = 4
             else:
                 self.states[idx] = 3
         elif state == 4:
-            if char == '\n':
+            if char == "\n":
                 self.states[idx] = 1
             else:
                 self.states[idx] = 3

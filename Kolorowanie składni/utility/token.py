@@ -9,6 +9,7 @@ class Token(Enum):
     ID = "identyfikator"
     SPECIAL = "słowo kluczowe"
     STRING = "text"
+    FSTRING = "f-string"
     PLUS = "+"
     MINUS = "-"
     MUL = "*"
