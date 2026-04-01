@@ -74,7 +74,7 @@ _create_exact
 | OCTNUMBER        | `oct_automat`     | `0[oO](?:_?[0-7])+`                                                                              | Liczba ósemkowa                |
 | HEXNUMBER        | `hex_automat`     | `0[xX](?:_?[0-9a-fA-F])+`                                                                        | Liczba szesnastkowa            |
 | ID               | `id_automat`      | `[a-zA-Z_][a-zA-Z0-9_]*`                                                                         | Identyfikator                  |
-| SPECIAL          | `_create_exact`   | `\b(?:if\|else\|for\|while\|def\|class\|return\|True\|False\|None\|match\|case)\b`               | Słowa kluczowe                 |
+| SPECIAL          | `_create_exact`   | `\b(?:if\|else\|elif\|for\|while\|def\|class\|return\|True\|False\|None\|match\|case)\b`         | Słowa kluczowe                 |
 | FSTRING          | `fstring_automat` |                                                                                                 | F-string (obsługa stosu / PDA) |
 | STRING           | `string_automat`  | `""".*?""" \| '''.*?''' \| ".*?" \| '.*?'`                                                       | Napisy                         |
 | PLUS             | `_create_exact`   | `+`                                                                                             | Plus                           |
