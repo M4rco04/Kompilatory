@@ -22,6 +22,8 @@ class Skaner:
             (Token.SPECIAL, self._create_exact("True")),
             (Token.SPECIAL, self._create_exact("False")),
             (Token.SPECIAL, self._create_exact("None")),
+            (Token.IMPORT, self._create_exact("import")),
+            (Token.IMPORT, self._create_exact("from")),
             (Token.FLOATNUMBER, self.float_automat),
             (Token.HEXNUMBER, self.hex_automat),
             (Token.BINNUMBER, self.bin_automat),

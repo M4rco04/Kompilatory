@@ -45,3 +45,4 @@ class Token(Enum):
     SPACE = " "
     COMMENT = "#"
     ERROR = "?"
+    IMPORT = "słowo używane w składni import"
