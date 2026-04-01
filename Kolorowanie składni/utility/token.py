@@ -46,3 +46,4 @@ class Token(Enum):
     COMMENT = "#"
     ERROR = "?"
     IMPORT = "słowo używane w składni import"
+    SELF = "Słowo wskazujące na obiekt"

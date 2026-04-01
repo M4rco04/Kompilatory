@@ -10,6 +10,7 @@ class HtmlGenerator:
         self.color_map = {
             Token.SPECIAL: "keyword",
             Token.IMPORT: "import",
+            Token.SELF: "self",
             Token.STRING: "string",
             Token.COMMENT: "comment",
             Token.FLOATNUMBER: "number",
@@ -70,7 +71,8 @@ class HtmlGenerator:
             "<style>",
             "  body { background-color: #2b2b2b; color: #a9b7c6; font-family: 'Consolas', 'Courier New', monospace; padding: 20px; font-size: 16px; line-height: 1.4; }",
             "  .keyword { color: #cc7832; font-weight: bold; }",
-            "  .import { color: #7D0552; }"
+            "  .import { color: #7D0552; }",
+            "  .self { color: #4BF0FC; }",
             "  .string { color: #6a8759; }",
             "  .number { color: #6897bb; }",
             "  .comment { color: #808080; font-style: italic; }",

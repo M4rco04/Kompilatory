@@ -13,6 +13,8 @@ class Skaner:
 
         self._config: List[Tuple[Token, Callable[[str, int], None]]] = [
             (Token.SPECIAL, self._create_exact("if")),
+            (Token.SPECIAL, self._create_exact("match")),
+            (Token.SPECIAL, self._create_exact("case")),
             (Token.SPECIAL, self._create_exact("else")),
             (Token.SPECIAL, self._create_exact("for")),
             (Token.SPECIAL, self._create_exact("while")),
@@ -24,6 +26,7 @@ class Skaner:
             (Token.SPECIAL, self._create_exact("None")),
             (Token.IMPORT, self._create_exact("import")),
             (Token.IMPORT, self._create_exact("from")),
+            (Token.SELF, self._create_exact("self")),
             (Token.FLOATNUMBER, self.float_automat),
             (Token.HEXNUMBER, self.hex_automat),
             (Token.BINNUMBER, self.bin_automat),
