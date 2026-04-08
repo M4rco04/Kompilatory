@@ -1,43 +1,43 @@
-# Dokumentacja Projektu: Pascal2C Converter
+# 📄 Dokumentacja Projektu: Pascal2C Converter
 
-## Dane autora
+## 👤 Dane autora
 - **Imię i nazwisko:** Marek Górny  
-- **Kontakt:** marekgorny1231@gmail.com  
+- **Kontakt:** 📧 marekgorny1231@gmail.com  
 
 ---
 
-## Założenia programu
+## ⚙️ Założenia programu
 
-### Ogólne cele programu
+### 🎯 Ogólne cele programu
 Głównym celem projektu jest stworzenie narzędzia umożliwiającego automatyczną translację kodu źródłowego zapisanego w języku **Pascal** na czytelny i kompilowalny kod w języku **C**.
 
 Program ma za zadanie:
 
-- Mapowanie struktur sterujących:
+- 🔁 Mapowanie struktur sterujących:
   - `if`
   - `while`
   - `for`
   - `repeat-until`
-- Transformację definicji typów oraz zmiennych
-- Obsługę specyficznych dla Pascala elementów (np. zagnieżdżone procedury)
-- Zachowanie komentarzy i logicznej struktury kodu źródłowego
+- 🔧 Transformację definicji typów oraz zmiennych
+- 🧩 Obsługę specyficznych dla Pascala elementów (np. zagnieżdżone procedury)
+- 📝 Zachowanie komentarzy i logicznej struktury kodu źródłowego
 
 ---
 
-### Rodzaj translatora
+### 🔄 Rodzaj translatora
 Program jest **kompilatorem źródło-źródło** (*source-to-source compiler*).
 
 Proces nie obejmuje generowania kodu maszynowego, lecz transformację wysokopoziomową między dwoma językami trzeciej generacji.
 
 ---
 
-### Planowany wynik działania programu
+### 📦 Planowany wynik działania programu
 Konwerter Pascala do C.
 
 Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
 
 ---
 
-### Planowany język implementacji
-- **Język:** Python  
-- **Narzędzia wspomagające:** ANTLR (generator parserów)
+### 🧑‍💻 Planowany język implementacji
+- **Język:** 🐍 Python  
+- **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów)
