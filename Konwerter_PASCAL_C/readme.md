@@ -11,6 +11,10 @@
 ### 🎯 Ogólne cele programu
 Głównym celem projektu jest stworzenie narzędzia umożliwiającego automatyczną translację kodu źródłowego zapisanego w języku **Pascal** na czytelny i kompilowalny kod w języku **C**.
 
+### 🧑‍💻 Język implementacji
+- **Język:** 🐍 Python  
+- **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów)
+
 Program ma za zadanie:
 
 - 🔁 Mapowanie struktur sterujących:
@@ -38,6 +42,3 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 
 ---
 
-### 🧑‍💻 Planowany język implementacji
-- **Język:** 🐍 Python  
-- **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów)
