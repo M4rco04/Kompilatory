@@ -8,11 +8,6 @@
 
 ## ⚙️ Założenia programu
 
-### 🎯 Ogólne cele programu
-Głównym celem projektu jest stworzenie narzędzia umożliwiającego automatyczną translację kodu źródłowego zapisanego w języku **Pascal** na czytelny i kompilowalny kod w języku **C**.
-
----
-
 ### 🔄 Rodzaj translatora
 Program jest **kompilatorem źródło-źródło** (*source-to-source compiler*).
 
@@ -23,6 +18,9 @@ Proces nie obejmuje generowania kodu maszynowego, lecz transformację wysokopozi
 ### 🧑‍💻 Język implementacji
 - **Język:** 🐍 Python  
 - **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów)
+
+### 🎯 Ogólne cele programu
+Głównym celem projektu jest stworzenie narzędzia umożliwiającego automatyczną translację kodu źródłowego zapisanego w języku **Pascal** na czytelny i kompilowalny kod w języku **C**.
 
 Program ma za zadanie:
 
