@@ -128,12 +128,37 @@ statement
     | ifStatement
     | whileStatement
     | forStatement
+    | repeatStatement
+    | caseStatement
     | procedureCall
     |
     ;
 
 assignmentStatement
     : IDENTIFIER ASSIGN expression
+    ;
+
+repeatStatement
+    : KEYWORD_REPEAT statementList KEYWORD_UNTIL expression
+    ;
+
+caseStatement
+    : KEYWORD_CASE expression KEYWORD_OF caseElement+ KEYWORD_END
+    ;
+
+caseElement
+    : caseLabelList COLON statement PUNCT_SEMI
+    ;
+
+caseLabelList
+    : constant (PUNCT_COMMA constant)*
+    ;
+
+constant
+    : NUMBER
+    | CHAR_CONST
+    | STRING
+    | BOOLEAN_CONST
     ;
 
 procedureCall
@@ -202,6 +227,10 @@ KEYWORD_FOR       : F O R ;
 KEYWORD_TO        : T O ;
 KEYWORD_PROCEDURE : P R O C E D U R E ;
 KEYWORD_FUNCTION  : F U N C T I O N ;
+KEYWORD_REPEAT : R E P E A T ;
+KEYWORD_UNTIL  : U N T I L ;
+KEYWORD_CASE   : C A S E ;
+KEYWORD_OF     : O F ;
 
 // --- typy ---
 TYPE
