@@ -243,7 +243,7 @@ WS
     ;
 
 // ==========================================
-// CASE INSENSITIVE (fragmenty)
+// CASE INSENSITIVE
 // ==========================================
 
 fragment A:[aA]; fragment B:[bB]; fragment C:[cC];
