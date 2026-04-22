@@ -66,8 +66,8 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Stałe logiczne           | BOOLEAN_CONST                                                                     | wartości logiczne              | `TRUE, FALSE`                           |
 | Stałe znakowe            | CHAR_CONST                                                                        | pojedynczy znak                | `'a', '1'`                              |
 | Stałe tekstowe           | STRING                                                                            | napisy                         | `'hello', 'abc'`                        |
-| Komentarze               | COMMENT (skip)                                                                    | `{ }`, `(* *)`                 | `{ komentarz }`                         |
-| Białe znaki              | WS (skip)                                                                         | spacje, taby, nowe linie       | `\n \t space`                           |
+| Komentarze               | COMMENT                                                                     | `{ }`, `(* *)`                 | `{ komentarz }`                         |
+| Białe znaki              | WS                                                                          | spacje, taby, nowe linie       | `\n \t space`                           |
 | Koniec wejścia           | EOF                                                                               | koniec pliku                   | —                                       |
 
 
