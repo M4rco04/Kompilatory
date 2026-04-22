@@ -51,6 +51,7 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Pętle                    | KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_TO, KEYWORD_REPEAT, KEYWORD_UNTIL | pętle                          | `WHILE, FOR, REPEAT UNTIL`              |
 | Case                     | KEYWORD_CASE, KEYWORD_OF                                                          | instrukcja wyboru              | `CASE OF`                               |
 | Podprogramy              | KEYWORD_PROCEDURE, KEYWORD_FUNCTION                                               | procedury i funkcje            | `PROCEDURE, FUNCTION`                   |
+| Tablice                  | KEYWORD_ARRAY                                                                     | deklaracja tablicy             | `ARRAY`                                 |
 | Typy danych              | TYPE                                                                              | typy wbudowane                 | `INTEGER, REAL, BOOLEAN, CHAR, LONGINT` |
 | Operatory relacyjne      | REL_OP                                                                            | porównania                     | `=, <>, <, <=, >, >=`                   |
 | Operatory arytmetyczne   | ADD_OP                                                                            | dodawanie / odejmowanie        | `+ , -`                                 |
@@ -61,15 +62,17 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Separatory               | PUNCT_SEMI                                                                        | średnik                        | `;`                                     |
 | Separatory               | PUNCT_COMMA                                                                       | przecinek                      | `,`                                     |
 | Separatory               | PUNCT_DOT                                                                         | kropka                         | `.`                                     |
-| Nawiasy                  | PUNCT_LPAREN, PUNCT_RPAREN                                                        | nawiasy okrągłe                | `( )`                                   |
+| Zakres (tablice)         | PUNCT_DOTDOT                                                                      | operator zakresu               | `..`                                    |
+| Nawiasy okrągłe          | PUNCT_LPAREN, PUNCT_RPAREN                                                        | nawiasy grupujące / parametry  | `( )`                                   |
+| Nawiasy kwadratowe       | PUNCT_LBRACKET, PUNCT_RBRACKET                                                    | indeksowanie tablic            | `[ ]`                                   |
 | Dwukropek                | COLON                                                                             | typy i deklaracje              | `:`                                     |
 | Identyfikatory           | IDENTIFIER                                                                        | nazwy zmiennych/funkcji        | `x, suma_1, _temp`                      |
 | Liczby                   | NUMBER                                                                            | liczby całkowite i rzeczywiste | `42, 3.14`                              |
 | Stałe logiczne           | BOOLEAN_CONST                                                                     | wartości logiczne              | `TRUE, FALSE`                           |
 | Stałe znakowe            | CHAR_CONST                                                                        | pojedynczy znak                | `'a', '1'`                              |
 | Stałe tekstowe           | STRING                                                                            | napisy                         | `'hello', 'abc'`                        |
-| Komentarze               | COMMENT                                                                     | `{ }`, `(* *)`                 | `{ komentarz }`                         |
-| Białe znaki              | WS                                                                          | spacje, taby, nowe linie       | `\n \t space`                           |
+| Komentarze               | COMMENT                                                                           | `{ }`, `(* *)`                 | `{ komentarz }`                         |
+| Białe znaki              | WS                                                                                | spacje, taby, nowe linie       | `\n \t space`                           |
 | Koniec wejścia           | EOF                                                                               | koniec pliku                   | —                                       |
 
 
