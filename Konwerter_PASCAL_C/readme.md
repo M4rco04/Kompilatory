@@ -50,7 +50,7 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Operatory całkowite | INT_OP | Dzielenie całkowite i modulo | DIV, MOD |
 | Operatory logiczne | LOG_OP | Operatory logiczne | AND, OR, NOT |
 | Znak przypisania | ASSIGN | Operator przypisania wartości. | := |
-| Interpunkcja | | Znaki strukturalne | "; , . ( )" |
+| Interpunkcja | PUNCT | Znaki strukturalne | "; , . ( )" |
 | Dwukropek | COLON | Separator typu / deklaracji| : |
 | Identyfikatory | IDENTIFIER | Nazwy zmiennych i programu: [a-zA-Z_][a-zA-Z0-9_]* | "licznik, suma_1" |
 | Liczby | NUMBER | Całkowite i zmiennoprzecinkowe: [0-9]+ ('.' [0-9]+)? | "42, 3.14" |
@@ -59,6 +59,7 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Typy danych | TYPE | Typy wbudowane | INTEGER, REAL, BOOLEAN, CHAR |
 | Procedury/Funkcje | SUBPROGRAM | Definicje podprogramów | PROCEDURE, FUNCTION |
 | Białe znaki | WS | "Spacje, taby, nowe linie. | "spacja, \n, \t" |
+| Koniec pliku | EOF | Koniec wejścia | — |
 
 
 
