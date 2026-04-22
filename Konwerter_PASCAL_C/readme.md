@@ -69,86 +69,192 @@ Gramatyka zapisana w notacji generatora **ANTLR4**.
 grammar Pascal;
 
 // ==========================================
-// REGUŁY PARSERA (Składnia)
+// PARSER
 // ==========================================
 
-program                 : 'PROGRAM' IDENTIFIER ';' block '.' EOF ;
+program
+    : KEYWORD_PROGRAM IDENTIFIER PUNCT_SEMI block PUNCT_DOT EOF
+    ;
 
-block                   : declarations compoundStatement ;
+block
+    : declarations compoundStatement
+    ;
 
-declarations            : variableDeclarationPart subprogramDeclarations ;
+declarations
+    : variableDeclarationPart subprogramDeclarations
+    ;
 
-variableDeclarationPart : 'VAR' variableDeclaration+ 
-                        | /* pusto */ 
-                        ;
+variableDeclarationPart
+    : KEYWORD_VAR variableDeclaration+
+    | 
+    ;
 
-variableDeclaration     : identifierList ':' type ';' ;
+variableDeclaration
+    : identifierList COLON type PUNCT_SEMI
+    ;
 
-identifierList          : IDENTIFIER (',' IDENTIFIER)* ;
+identifierList
+    : IDENTIFIER (PUNCT_COMMA IDENTIFIER)*
+    ;
 
-type                    : 'INTEGER' | 'REAL' | 'BOOLEAN' | 'CHAR' ;
+type
+    : TYPE
+    ;
 
-subprogramDeclarations  : subprogramDeclaration* ;
+subprogramDeclarations
+    : subprogramDeclaration*
+    ;
 
-subprogramDeclaration   : subprogramHead ';' block ';' ;
+subprogramDeclaration
+    : subprogramHead PUNCT_SEMI block PUNCT_SEMI
+    ;
 
-subprogramHead          : 'PROCEDURE' IDENTIFIER 
-                        | 'FUNCTION' IDENTIFIER ':' type 
-                        ;
+subprogramHead
+    : KEYWORD_PROCEDURE IDENTIFIER
+    | KEYWORD_FUNCTION IDENTIFIER COLON type
+    ;
 
-compoundStatement       : 'BEGIN' statementList 'END' ;
+compoundStatement
+    : KEYWORD_BEGIN statementList KEYWORD_END
+    ;
 
-statementList           : statement (';' statement)* ;
+statementList
+    : statement (PUNCT_SEMI statement)*
+    ;
 
-statement               : assignmentStatement
-                        | compoundStatement
-                        | ifStatement
-                        | whileStatement
-                        | emptyStatement 
-                        ;
+statement
+    : assignmentStatement
+    | compoundStatement
+    | ifStatement
+    | whileStatement
+    | 
+    ;
 
-assignmentStatement     : IDENTIFIER ASSIGN expression ;
+assignmentStatement
+    : IDENTIFIER ASSIGN expression
+    ;
 
-ifStatement             : 'IF' expression 'THEN' statement ('ELSE' statement)? ;
+ifStatement
+    : KEYWORD_IF expression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
+    ;
 
-whileStatement          : 'WHILE' expression 'DO' statement ;
-
-emptyStatement          : /* pusto */ ;
-
-// --- Wyrażenia i priorytety ---
-expression              : simpleExpression (REL_OP simpleExpression)? ;
-
-simpleExpression        : term ((ADD_OP | 'OR') term)* ;
-
-term                    : factor ((MUL_OP | INT_OP | 'AND') factor)* ;
-
-factor                  : 'NOT' factor
-                        | ADD_OP factor
-                        | IDENTIFIER
-                        | NUMBER
-                        | BOOLEAN_CONST
-                        | '(' expression ')' 
-                        ;
+whileStatement
+    : KEYWORD_WHILE expression KEYWORD_DO statement
+    ;
 
 // ==========================================
-// REGUŁY LEXERA (Tokeny)
+// WYRAŻENIA
 // ==========================================
 
-ASSIGN          : ':=' ;
-COLON           : ':' ;
+expression
+    : simpleExpression (REL_OP simpleExpression)?
+    ;
 
-REL_OP          : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
-ADD_OP          : '+' | '-' ;
-MUL_OP          : '*' | '/' ;
-INT_OP          : 'DIV' | 'MOD' ;
+simpleExpression
+    : term ((ADD_OP | LOG_OP_OR) term)*
+    ;
 
-BOOLEAN_CONST   : 'TRUE' | 'FALSE' ;
+term
+    : factor ((MUL_OP | INT_OP | LOG_OP_AND) factor)*
+    ;
 
-IDENTIFIER      : [a-zA-Z_][a-zA-Z0-9_]* ;
-NUMBER          : [0-9]+ ('.' [0-9]+)? ;
+factor
+    : LOG_OP_NOT factor
+    | ADD_OP factor
+    | IDENTIFIER
+    | NUMBER
+    | BOOLEAN_CONST
+    | PUNCT_LPAREN expression PUNCT_RPAREN
+    ;
 
-COMMENT         : ( '{' .*? '}' | '(*' .*? '*)' ) -> skip ;
-WS              : [ \t\r\n]+ -> skip ;
+// ==========================================
+// LEXER
+// ==========================================
+
+// --- słowa kluczowe ---
+KEYWORD_PROGRAM   : P R O G R A M ;
+KEYWORD_VAR       : V A R ;
+KEYWORD_BEGIN     : B E G I N ;
+KEYWORD_END       : E N D ;
+KEYWORD_IF        : I F ;
+KEYWORD_THEN      : T H E N ;
+KEYWORD_ELSE      : E L S E ;
+KEYWORD_WHILE     : W H I L E ;
+KEYWORD_DO        : D O ;
+KEYWORD_PROCEDURE : P R O C E D U R E ;
+KEYWORD_FUNCTION  : F U N C T I O N ;
+
+// --- typy ---
+TYPE
+    : I N T E G E R
+    | R E A L
+    | B O O L E A N
+    | C H A R
+    ;
+
+// --- operatory ---
+REL_OP  : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
+ADD_OP  : '+' | '-' ;
+MUL_OP  : '*' | '/' ;
+INT_OP  : D I V | M O D ;
+
+// --- logiczne (rozdzielone dla parsera) ---
+LOG_OP_AND : A N D ;
+LOG_OP_OR  : O R ;
+LOG_OP_NOT : N O T ;
+
+// --- przypisanie ---
+ASSIGN : ':=' ;
+
+// --- interpunkcja ---
+PUNCT_SEMI   : ';' ;
+PUNCT_COMMA  : ',' ;
+PUNCT_DOT    : '.' ;
+PUNCT_LPAREN : '(' ;
+PUNCT_RPAREN : ')' ;
+
+// --- inne ---
+COLON : ':' ;
+
+// --- wartości ---
+BOOLEAN_CONST
+    : T R U E
+    | F A L S E
+    ;
+
+IDENTIFIER
+    : [a-zA-Z_] [a-zA-Z0-9_]*
+    ;
+
+NUMBER
+    : [0-9]+ ('.' [0-9]+)?
+    ;
+
+// --- komentarze ---
+COMMENT
+    : '{' .*? '}'
+    | '(*' .*? '*)'
+    -> skip
+    ;
+
+// --- białe znaki ---
+WS
+    : [ \t\r\n]+ -> skip
+    ;
+
+// ==========================================
+// CASE INSENSITIVE (fragmenty)
+// ==========================================
+
+fragment A:[aA]; fragment B:[bB]; fragment C:[cC];
+fragment D:[dD]; fragment E:[eE]; fragment F:[fF];
+fragment G:[gG]; fragment H:[hH]; fragment I:[iI];
+fragment J:[jJ]; fragment K:[kK]; fragment L:[lL];
+fragment M:[mM]; fragment N:[nN]; fragment O:[oO];
+fragment P:[pP]; fragment Q:[qQ]; fragment R:[rR];
+fragment S:[sS]; fragment T:[tT]; fragment U:[uU];
+fragment V:[vV]; fragment W:[wW]; fragment X:[xX];
+fragment Y:[yY]; fragment Z:[zZ];
 ```
 
 ---
