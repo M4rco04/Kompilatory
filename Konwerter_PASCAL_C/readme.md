@@ -37,6 +37,7 @@ Program ma za zadanie:
 
 ### 📦 Planowany wynik działania programu
 Konwerter Pascala do C.
+Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
 
 ### Zbiór tokenów
 
@@ -47,12 +48,12 @@ Konwerter Pascala do C.
 | Operatory Dodawania | ADD_OP | Dodawanie i odejmowanie | "+, -" |
 | Operatory Mnożenia | MUL_OP | Mnożenie i dzielenie | "*, /" |
 | Znak przypisania | ASSIGN | Operator przypisania wartości. | := |
-| Interpunkcja | | Znaki strukturalne | ";, :, ,, ., (, )" |
-Identyfikatory,IDENTIFIER,Nazwy zmiennych i programu: [a-zA-Z_][a-zA-Z0-9_]*,"licznik, suma_1"
-Liczby,NUMBER,Całkowite i zmiennoprzecinkowe: [0-9]+ ('.' [0-9]+)?,"42, 3.14"
-Białe znaki,WS,"Spacje, taby, nowe linie. W parserze są pomijane (-> skip).","spacja, \n, \t"
+| Interpunkcja | | Znaki strukturalne | "; : , . ( )" |
+| Identyfikatory | IDENTIFIER | Nazwy zmiennych i programu: [a-zA-Z_][a-zA-Z0-9_]* | "licznik, suma_1" |
+| Liczby | NUMBER | Całkowite i zmiennoprzecinkowe: [0-9]+ ('.' [0-9]+)? | "42, 3.14" |
+| Białe znaki | WS | "Spacje, taby, nowe linie. | "spacja, \n, \t" |
 
-Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
+
 
 ---
 
