@@ -1,9 +1,30 @@
-PROGRAM Tablice;
+PROGRAM WypelnianieMacierzy;
+
 VAR
-  wektor : ARRAY [1..100] OF INTEGER;
-  macierz : ARRAY [0..9, 0..9] OF REAL;
+  macierz : ARRAY [1..5, 1..5] OF INTEGER;
   i, j : INTEGER;
+
 BEGIN
-  wektor[1] := 42;
-  macierz[i, j] := wektor[i] + 3.14;
+  Randomize; 
+
+  FOR i := 1 TO 5 DO
+  BEGIN
+    FOR j := 1 TO 5 DO
+    BEGIN
+      macierz[i, j] := Random(11);
+    END;
+  END;
+
+  WriteLn('Zawartosc macierzy (5x5):');
+  FOR i := 1 TO 5 DO
+  BEGIN
+    FOR j := 1 TO 5 DO
+    BEGIN
+      Write(macierz[i, j]:4);
+    END;
+    WriteLn;
+  END;
+  
+  WriteLn('Nacisnij ENTER, aby zakonczyc...');
+  ReadLn;
 END.
