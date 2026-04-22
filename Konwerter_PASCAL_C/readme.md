@@ -39,6 +39,8 @@ Program ma za zadanie:
 Konwerter Pascala do C.
 Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
 
+---
+
 ## Zbiór tokenów
 
 | Kategoria                | Nazwa tokenu                                                                      | Opis / wyrażenie               | Przykłady w Pascalu                     |
