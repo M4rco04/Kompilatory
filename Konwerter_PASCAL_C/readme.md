@@ -122,8 +122,16 @@ subprogramDeclaration
     ;
 
 subprogramHead
-    : KEYWORD_PROCEDURE IDENTIFIER
-    | KEYWORD_FUNCTION IDENTIFIER COLON type
+    : KEYWORD_PROCEDURE IDENTIFIER formalParameterList?
+    | KEYWORD_FUNCTION IDENTIFIER formalParameterList? COLON type
+    ;
+
+formalParameterList
+    : PUNCT_LPAREN formalParameterGroup (PUNCT_SEMI formalParameterGroup)* PUNCT_RPAREN
+    ;
+
+formalParameterGroup
+    : identifierList COLON type
     ;
 
 compoundStatement
