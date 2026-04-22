@@ -86,7 +86,7 @@ declarations
 
 variableDeclarationPart
     : KEYWORD_VAR variableDeclaration+
-    | 
+    |
     ;
 
 variableDeclaration
@@ -127,11 +127,21 @@ statement
     | compoundStatement
     | ifStatement
     | whileStatement
-    | 
+    | forStatement
+    | procedureCall
+    |
     ;
 
 assignmentStatement
     : IDENTIFIER ASSIGN expression
+    ;
+
+procedureCall
+    : IDENTIFIER (PUNCT_LPAREN argumentList? PUNCT_RPAREN)?
+    ;
+
+argumentList
+    : expression (PUNCT_COMMA expression)*
     ;
 
 ifStatement
@@ -140,6 +150,10 @@ ifStatement
 
 whileStatement
     : KEYWORD_WHILE expression KEYWORD_DO statement
+    ;
+
+forStatement
+    : KEYWORD_FOR IDENTIFIER ASSIGN expression KEYWORD_TO expression KEYWORD_DO statement
     ;
 
 // ==========================================
@@ -161,9 +175,12 @@ term
 factor
     : LOG_OP_NOT factor
     | ADD_OP factor
+    | procedureCall
     | IDENTIFIER
     | NUMBER
     | BOOLEAN_CONST
+    | STRING
+    | CHAR_CONST
     | PUNCT_LPAREN expression PUNCT_RPAREN
     ;
 
@@ -181,6 +198,8 @@ KEYWORD_THEN      : T H E N ;
 KEYWORD_ELSE      : E L S E ;
 KEYWORD_WHILE     : W H I L E ;
 KEYWORD_DO        : D O ;
+KEYWORD_FOR       : F O R ;
+KEYWORD_TO        : T O ;
 KEYWORD_PROCEDURE : P R O C E D U R E ;
 KEYWORD_FUNCTION  : F U N C T I O N ;
 
@@ -190,6 +209,7 @@ TYPE
     | R E A L
     | B O O L E A N
     | C H A R
+    | L O N G I N T
     ;
 
 // --- operatory ---
@@ -198,7 +218,7 @@ ADD_OP  : '+' | '-' ;
 MUL_OP  : '*' | '/' ;
 INT_OP  : D I V | M O D ;
 
-// --- logiczne (rozdzielone dla parsera) ---
+// --- logiczne ---
 LOG_OP_AND : A N D ;
 LOG_OP_OR  : O R ;
 LOG_OP_NOT : N O T ;
@@ -216,6 +236,15 @@ PUNCT_RPAREN : ')' ;
 // --- inne ---
 COLON : ':' ;
 
+// --- stringi i znaki ---
+CHAR_CONST
+    : '\'' ( '\'\'' | ~'\'' ) '\''
+    ;
+
+STRING
+    : '\'' ( '\'\'' | ~'\'' )* '\''
+    ;
+
 // --- wartości ---
 BOOLEAN_CONST
     : T R U E
@@ -232,8 +261,8 @@ NUMBER
 
 // --- komentarze ---
 COMMENT
-    : '{' .*? '}'
-    | '(*' .*? '*)'
+    : ('{' .*? '}'
+    | '(*' .*? '*)')
     -> skip
     ;
 
