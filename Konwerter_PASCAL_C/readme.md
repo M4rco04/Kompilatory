@@ -17,7 +17,7 @@ Proces nie obejmuje generowania kodu maszynowego, lecz transformację wysokopozi
 
 ### 🧑‍💻 Język implementacji
 - **Język:** 🐍 Python  
-- **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów) - (Testowanie gramatyki)[http://lab.antlr.org/]
+- **Narzędzia wspomagające:** 🛠️ ANTLR (generator parserów) - [Testowanie gramatyki](http://lab.antlr.org/)
 
 ### 🎯 Ogólne cele programu
 Głównym celem projektu jest stworzenie narzędzia umożliwiającego automatyczną translację kodu źródłowego zapisanego w języku **Pascal** na czytelny i kompilowalny kod w języku **C**.
