@@ -98,7 +98,7 @@ declarations
 
 variableDeclarationPart
     : KEYWORD_VAR variableDeclaration+
-    |
+    | /* puste */
     ;
 
 variableDeclaration
@@ -109,10 +109,25 @@ identifierList
     : IDENTIFIER (PUNCT_COMMA IDENTIFIER)*
     ;
 
+// --- Obsługa typów i tablic ---
 type
     : TYPE
+    | arrayType
     ;
 
+arrayType
+    : KEYWORD_ARRAY PUNCT_LBRACKET indexRange (PUNCT_COMMA indexRange)* PUNCT_RBRACKET KEYWORD_OF type
+    ;
+
+indexRange
+    : sign? constant PUNCT_DOTDOT sign? constant
+    ;
+
+sign
+    : ADD_OP
+    ;
+
+// --- Podprogramy ---
 subprogramDeclarations
     : subprogramDeclaration*
     ;
@@ -134,6 +149,12 @@ formalParameterGroup
     : identifierList COLON type
     ;
 
+// --- Zmienne (z uwzględnieniem odwołań do indeksów tablic) ---
+variable
+    : IDENTIFIER (PUNCT_LBRACKET expression (PUNCT_COMMA expression)* PUNCT_RBRACKET)?
+    ;
+
+// --- Instrukcje ---
 compoundStatement
     : KEYWORD_BEGIN statementList KEYWORD_END
     ;
@@ -151,11 +172,11 @@ statement
     | repeatStatement
     | caseStatement
     | procedureCall
-    |
+    | /* puste */
     ;
 
 assignmentStatement
-    : IDENTIFIER ASSIGN expression
+    : variable ASSIGN expression
     ;
 
 repeatStatement
@@ -221,7 +242,7 @@ factor
     : LOG_OP_NOT factor
     | ADD_OP factor
     | procedureCall
-    | IDENTIFIER
+    | variable
     | NUMBER
     | BOOLEAN_CONST
     | STRING
@@ -247,10 +268,11 @@ KEYWORD_FOR       : F O R ;
 KEYWORD_TO        : T O ;
 KEYWORD_PROCEDURE : P R O C E D U R E ;
 KEYWORD_FUNCTION  : F U N C T I O N ;
-KEYWORD_REPEAT : R E P E A T ;
-KEYWORD_UNTIL  : U N T I L ;
-KEYWORD_CASE   : C A S E ;
-KEYWORD_OF     : O F ;
+KEYWORD_REPEAT    : R E P E A T ;
+KEYWORD_UNTIL     : U N T I L ;
+KEYWORD_CASE      : C A S E ;
+KEYWORD_OF        : O F ;
+KEYWORD_ARRAY     : A R R A Y ;
 
 // --- typy ---
 TYPE
@@ -276,11 +298,14 @@ LOG_OP_NOT : N O T ;
 ASSIGN : ':=' ;
 
 // --- interpunkcja ---
-PUNCT_SEMI   : ';' ;
-PUNCT_COMMA  : ',' ;
-PUNCT_DOT    : '.' ;
-PUNCT_LPAREN : '(' ;
-PUNCT_RPAREN : ')' ;
+PUNCT_SEMI     : ';' ;
+PUNCT_COMMA    : ',' ;
+PUNCT_DOT      : '.' ;
+PUNCT_LPAREN   : '(' ;
+PUNCT_RPAREN   : ')' ;
+PUNCT_LBRACKET : '[' ;
+PUNCT_RBRACKET : ']' ;
+PUNCT_DOTDOT   : '..' ;
 
 // --- inne ---
 COLON : ':' ;
@@ -310,9 +335,7 @@ NUMBER
 
 // --- komentarze ---
 COMMENT
-    : ('{' .*? '}'
-    | '(*' .*? '*)')
-    -> skip
+    : ('{' .*? '}' | '(*' .*? '*)') -> skip
     ;
 
 // --- białe znaki ---
