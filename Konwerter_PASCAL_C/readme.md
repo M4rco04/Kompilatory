@@ -39,7 +39,7 @@ Program ma za zadanie:
 Konwerter Pascala do C.
 Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
 
-### Zbiór tokenów
+## Zbiór tokenów
 
 | Kategoria | Nazwa Tokenu | Opis / Wyrażenie Regularne | Przykłady w Pascalu |
 | --------- | ------------ | -------------------------- | ------------------- |
@@ -61,8 +61,95 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 | Białe znaki | WS | "Spacje, taby, nowe linie. | "spacja, \n, \t" |
 | Koniec pliku | EOF | Koniec wejścia | — |
 
+## Gramatyka formatu
 
+Gramatyka zapisana w notacji generatora **ANTLR4**.
 
+```antlr
+grammar Pascal;
+
+// ==========================================
+// REGUŁY PARSERA (Składnia)
+// ==========================================
+
+program                 : 'PROGRAM' IDENTIFIER ';' block '.' EOF ;
+
+block                   : declarations compoundStatement ;
+
+declarations            : variableDeclarationPart subprogramDeclarations ;
+
+variableDeclarationPart : 'VAR' variableDeclaration+ 
+                        | /* pusto */ 
+                        ;
+
+variableDeclaration     : identifierList ':' type ';' ;
+
+identifierList          : IDENTIFIER (',' IDENTIFIER)* ;
+
+type                    : 'INTEGER' | 'REAL' | 'BOOLEAN' | 'CHAR' ;
+
+subprogramDeclarations  : subprogramDeclaration* ;
+
+subprogramDeclaration   : subprogramHead ';' block ';' ;
+
+subprogramHead          : 'PROCEDURE' IDENTIFIER 
+                        | 'FUNCTION' IDENTIFIER ':' type 
+                        ;
+
+compoundStatement       : 'BEGIN' statementList 'END' ;
+
+statementList           : statement (';' statement)* ;
+
+statement               : assignmentStatement
+                        | compoundStatement
+                        | ifStatement
+                        | whileStatement
+                        | emptyStatement 
+                        ;
+
+assignmentStatement     : IDENTIFIER ASSIGN expression ;
+
+ifStatement             : 'IF' expression 'THEN' statement ('ELSE' statement)? ;
+
+whileStatement          : 'WHILE' expression 'DO' statement ;
+
+emptyStatement          : /* pusto */ ;
+
+// --- Wyrażenia i priorytety ---
+expression              : simpleExpression (REL_OP simpleExpression)? ;
+
+simpleExpression        : term ((ADD_OP | 'OR') term)* ;
+
+term                    : factor ((MUL_OP | INT_OP | 'AND') factor)* ;
+
+factor                  : 'NOT' factor
+                        | ADD_OP factor
+                        | IDENTIFIER
+                        | NUMBER
+                        | BOOLEAN_CONST
+                        | '(' expression ')' 
+                        ;
+
+// ==========================================
+// REGUŁY LEXERA (Tokeny)
+// ==========================================
+
+ASSIGN          : ':=' ;
+COLON           : ':' ;
+
+REL_OP          : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
+ADD_OP          : '+' | '-' ;
+MUL_OP          : '*' | '/' ;
+INT_OP          : 'DIV' | 'MOD' ;
+
+BOOLEAN_CONST   : 'TRUE' | 'FALSE' ;
+
+IDENTIFIER      : [a-zA-Z_][a-zA-Z0-9_]* ;
+NUMBER          : [0-9]+ ('.' [0-9]+)? ;
+
+COMMENT         : ( '{' .*? '}' | '(*' .*? '*)' ) -> skip ;
+WS              : [ \t\r\n]+ -> skip ;
+```
 
 ---
 
