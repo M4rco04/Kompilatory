@@ -1,5 +1,7 @@
 program ObliczanieSilni;
 
+var
+  liczba: integer;
 { ==========================================
   1. Wersja rekurencyjna
   ========================================== }
@@ -32,9 +34,6 @@ begin
   
   SilniaIteracyjna := wynik;
 end;
-
-var
-  liczba: integer;
 
 begin
   Write('Podaj liczbe naturalna (>= 0): ');
