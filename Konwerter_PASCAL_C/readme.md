@@ -39,7 +39,9 @@ Program ma za zadanie:
 Konwerter Pascala do C.
 
 ### Zbiór tokenów
+
 | Kategoria | Nazwa Tokenu | Opis / Wyrażenie Regularne | Przykłady w Pascalu |
+| --------- | ------------ | -------------------------- | ------------------- |
 | Słowa kluczowe | | Słowa kluczowe w PASCAL | "PROGRAM, VAR, BEGIN, END, INTEGER, REAL, IF, THEN, ELSE, WHILE, DO" |
 | Operatory Relacyjne | REL_OP | Operatory porównania | "=, <>, <, <=, >, >=" |
 | Operatory Dodawania | ADD_OP | Dodawanie i odejmowanie | "+, -" |
