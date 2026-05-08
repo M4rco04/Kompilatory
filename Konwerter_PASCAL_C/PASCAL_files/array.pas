@@ -20,7 +20,7 @@ BEGIN
   BEGIN
     FOR j := 1 TO 5 DO
     BEGIN
-      Write(macierz[i, j]:4);
+      Write(macierz[i, j]);
     END;
     WriteLn;
   END;

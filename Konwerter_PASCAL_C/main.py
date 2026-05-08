@@ -41,7 +41,8 @@ class CodeGeneratorVisitor(PascalVisitor):
         c_code = f"// Wygenerowano z programu: {program_name}\n"
         c_code += "#include <stdio.h>\n"
         c_code += "#include <stdlib.h>\n"
-        c_code += "#include <stdbool.h>\n\n"
+        c_code += "#include <stdbool.h>\n"
+        c_code += "#include <time.h>\n\n"
         
         c_code += self.visit(ctx.block().declarations()) or ""
         
@@ -273,6 +274,15 @@ class CodeGeneratorVisitor(PascalVisitor):
                 
             args_list = [str(self.visit(e)).strip() for e in elements]
             
+        if name.upper() == "RANDOMIZE":
+            return "srand(time(NULL))"
+            
+        if name.upper() == "RANDOM":
+            if args_list:
+                return f"(rand() % {args_list[0]})"
+            else:
+                return "rand()"
+
         if name.upper() in ["WRITE", "WRITELN"]:
             if not args_list:
                 return 'printf("\\n")'
@@ -284,11 +294,12 @@ class CodeGeneratorVisitor(PascalVisitor):
                 if arg.startswith('"') and arg.endswith('"'):
                     format_str += arg[1:-1]
                 else:
-                    format_str += "%d"
+                    # Zmieniłem "%d" na "%d ", żeby liczby w macierzy się nie zlały!
+                    format_str += "%d " 
                     vars_list.append(arg)
                     
             if name.upper() == "WRITELN":
-                format_str += "\\n"
+                format_str = format_str.rstrip() + "\\n"
                 
             if vars_list:
                 c_args = ", ".join(vars_list)
