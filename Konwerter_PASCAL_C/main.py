@@ -181,11 +181,9 @@ class CodeGeneratorVisitor(PascalVisitor):
             if not args:
                 return 'printf("\\n")'
             
-            # Proste obejście dla stringów i intów w printf, aby kod C się kompilował
             if '"' in args and ',' not in args:
                 return f'printf({args})'
             else:
-                # Domyślny format %d dla zmiennych całkowitych (np. macierz[i][j])
                 return f'printf("%d ", {args})'
             
         if not ctx.PUNCT_LPAREN():
