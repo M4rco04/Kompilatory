@@ -43,37 +43,37 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 
 ## Zbiór tokenów
 
-| Kategoria                | Nazwa tokenu                                                                      | Opis / wyrażenie               | Przykłady w Pascalu                     |
-| ------------------------ | --------------------------------------------------------------------------------- | ------------------------------ | --------------------------------------- |
-| Słowa kluczowe (program) | KEYWORD_PROGRAM                                                                   | deklaracja programu            | `PROGRAM`                               |
-| Słowa kluczowe (blok)    | KEYWORD_VAR, KEYWORD_BEGIN, KEYWORD_END                                           | sekcje programu                | `VAR, BEGIN, END`                       |
-| Sterowanie               | KEYWORD_IF, KEYWORD_THEN, KEYWORD_ELSE                                            | instrukcje warunkowe           | `IF THEN ELSE`                          |
-| Pętle                    | KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_TO, KEYWORD_REPEAT, KEYWORD_UNTIL | pętle                          | `WHILE, FOR, REPEAT UNTIL`              |
-| Case                     | KEYWORD_CASE, KEYWORD_OF                                                          | instrukcja wyboru              | `CASE OF`                               |
-| Podprogramy              | KEYWORD_PROCEDURE, KEYWORD_FUNCTION                                               | procedury i funkcje            | `PROCEDURE, FUNCTION`                   |
-| Tablice                  | KEYWORD_ARRAY                                                                     | deklaracja tablicy             | `ARRAY`                                 |
-| Typy danych              | TYPE                                                                              | typy wbudowane                 | `INTEGER, REAL, BOOLEAN, CHAR, LONGINT` |
-| Operatory relacyjne      | REL_OP                                                                            | porównania                     | `=, <>, <, <=, >, >=`                   |
-| Operatory arytmetyczne   | ADD_OP                                                                            | dodawanie / odejmowanie        | `+ , -`                                 |
-| Operatory arytmetyczne   | MUL_OP                                                                            | mnożenie / dzielenie           | `* , /`                                 |
-| Operatory całkowite      | INT_OP                                                                            | dzielenie całkowite i modulo   | `DIV, MOD`                              |
-| Operatory logiczne       | LOG_OP_AND, LOG_OP_OR, LOG_OP_NOT                                                 | logika                         | `AND, OR, NOT`                          |
-| Przypisanie              | ASSIGN                                                                            | przypisanie wartości           | `:=`                                    |
-| Separatory               | PUNCT_SEMI                                                                        | średnik                        | `;`                                     |
-| Separatory               | PUNCT_COMMA                                                                       | przecinek                      | `,`                                     |
-| Separatory               | PUNCT_DOT                                                                         | kropka                         | `.`                                     |
-| Zakres (tablice)         | PUNCT_DOTDOT                                                                      | operator zakresu               | `..`                                    |
-| Nawiasy okrągłe          | PUNCT_LPAREN, PUNCT_RPAREN                                                        | nawiasy grupujące / parametry  | `( )`                                   |
-| Nawiasy kwadratowe       | PUNCT_LBRACKET, PUNCT_RBRACKET                                                    | indeksowanie tablic            | `[ ]`                                   |
-| Dwukropek                | COLON                                                                             | typy i deklaracje              | `:`                                     |
-| Identyfikatory           | IDENTIFIER                                                                        | nazwy zmiennych/funkcji        | `x, suma_1, _temp`                      |
-| Liczby                   | NUMBER                                                                            | liczby całkowite i rzeczywiste | `42, 3.14`                              |
-| Stałe logiczne           | BOOLEAN_CONST                                                                     | wartości logiczne              | `TRUE, FALSE`                           |
-| Stałe znakowe            | CHAR_CONST                                                                        | pojedynczy znak                | `'a', '1'`                              |
-| Stałe tekstowe           | STRING                                                                            | napisy                         | `'hello', 'abc'`                        |
-| Komentarze               | COMMENT                                                                           | `{ }`, `(* *)`                 | `{ komentarz }`                         |
-| Białe znaki              | WS                                                                                | spacje, taby, nowe linie       | `\n \t space`                           |
-| Koniec wejścia           | EOF                                                                               | koniec pliku                   | —                                       |
+| Kategoria                | Nazwa tokenu                                    | Regex                                   | Opis / wyrażenie               | Przykłady w Pascalu                     |
+| ------------------------ | ------------------------------------------------|-------------------------------- | ------------------------------ | --------------------------------------- |
+| Słowa kluczowe (program) | KEYWORD_PROGRAM                                 |                                  | deklaracja programu            | `PROGRAM`                               |
+| Słowa kluczowe (blok)    | KEYWORD_VAR, KEYWORD_BEGIN, KEYWORD_END          |                                 | sekcje programu                | `VAR, BEGIN, END`                       |
+| Sterowanie               | KEYWORD_IF, KEYWORD_THEN, KEYWORD_ELSE            |                                | instrukcje warunkowe           | `IF THEN ELSE`                          |
+| Pętle                    | KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_TO, KEYWORD_REPEAT, KEYWORD_UNTIL |       | pętle                          | `WHILE, FOR, REPEAT UNTIL`              |
+| Case                     | KEYWORD_CASE, KEYWORD_OF                        |                                  | instrukcja wyboru              | `CASE OF`                               |
+| Podprogramy              | KEYWORD_PROCEDURE, KEYWORD_FUNCTION              |                                 | procedury i funkcje            | `PROCEDURE, FUNCTION`                   |
+| Tablice                  | KEYWORD_ARRAY                                     |                                | deklaracja tablicy             | `ARRAY`                                 |
+| Typy danych              | TYPE                                               |                               | typy wbudowane                 | `INTEGER, REAL, BOOLEAN, CHAR, LONGINT` |
+| Operatory relacyjne      | REL_OP                                              |                              | porównania                     | `=, <>, <, <=, >, >=`                   |
+| Operatory arytmetyczne   | ADD_OP                                               |                             | dodawanie / odejmowanie        | `+ , -`                                 |
+| Operatory arytmetyczne   | MUL_OP                                                |                            | mnożenie / dzielenie           | `* , /`                                 |
+| Operatory całkowite      | INT_OP                                                 |                           | dzielenie całkowite i modulo   | `DIV, MOD`                              |
+| Operatory logiczne       | LOG_OP_AND, LOG_OP_OR, LOG_OP_NOT                       |                          | logika                         | `AND, OR, NOT`                          |
+| Przypisanie              | ASSIGN                                                   |                         | przypisanie wartości           | `:=`                                    |
+| Separatory               | PUNCT_SEMI                                                |                        | średnik                        | `;`                                     |
+| Separatory               | PUNCT_COMMA                                                |                       | przecinek                      | `,`                                     |
+| Separatory               | PUNCT_DOT                                                   |                      | kropka                         | `.`                                     |
+| Zakres (tablice)         | PUNCT_DOTDOT                                                 |                     | operator zakresu               | `..`                                    |
+| Nawiasy okrągłe          | PUNCT_LPAREN, PUNCT_RPAREN                                    |                    | nawiasy grupujące / parametry  | `( )`                                   |
+| Nawiasy kwadratowe       | PUNCT_LBRACKET, PUNCT_RBRACKET                                 |                   | indeksowanie tablic            | `[ ]`                                   |
+| Dwukropek                | COLON                                                           |                  | typy i deklaracje              | `:`                                     |
+| Identyfikatory           | IDENTIFIER                                                       |                 | nazwy zmiennych/funkcji        | `x, suma_1, _temp`                      |
+| Liczby                   | NUMBER                                                            |                | liczby całkowite i rzeczywiste | `42, 3.14`                              |
+| Stałe logiczne           | BOOLEAN_CONST                                                      |               | wartości logiczne              | `TRUE, FALSE`                           |
+| Stałe znakowe            | CHAR_CONST                                                          |              | pojedynczy znak                | `'a', '1'`                              |
+| Stałe tekstowe           | STRING                                                               |             | napisy                         | `'hello', 'abc'`                        |
+| Komentarze               | COMMENT                                                               |            | `{ }`, `(* *)`                 | `{ komentarz }`                         |
+| Białe znaki              | WS                                                                     |           | spacje, taby, nowe linie       | `\n \t space`                           |
+| Koniec wejścia           | EOF                                                                     |          | koniec pliku                   | —                                       |
 
 
 ## Gramatyka formatu
@@ -182,10 +182,6 @@ assignmentStatement
     : variable ASSIGN expression
     ;
 
-repeatStatement
-    : KEYWORD_REPEAT statementList KEYWORD_UNTIL expression
-    ;
-
 caseStatement
     : KEYWORD_CASE expression KEYWORD_OF caseElement+ KEYWORD_END
     ;
@@ -214,11 +210,15 @@ argumentList
     ;
 
 ifStatement
-    : KEYWORD_IF expression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
+    : KEYWORD_IF booleanExpression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
     ;
 
 whileStatement
-    : KEYWORD_WHILE expression KEYWORD_DO statement
+    : KEYWORD_WHILE booleanExpression KEYWORD_DO statement
+    ;
+
+repeatStatement
+    : KEYWORD_REPEAT statementList KEYWORD_UNTIL booleanExpression
     ;
 
 forStatement
@@ -231,6 +231,14 @@ forStatement
 
 expression
     : simpleExpression (REL_OP simpleExpression)?
+    ;
+
+booleanExpression
+    : expression REL_OP expression
+    | BOOLEAN_CONST
+    | LOG_OP_NOT booleanExpression
+    | booleanExpression (LOG_OP_AND | LOG_OP_OR) booleanExpression
+    | PUNCT_LPAREN booleanExpression PUNCT_RPAREN
     ;
 
 simpleExpression
@@ -338,12 +346,12 @@ NUMBER
 
 // --- komentarze ---
 COMMENT
-    : ('{' .*? '}' | '(*' .*? '*)') -> skip
+    : ('{' .*? '}' | '(*' .*? '*)') -> channel(HIDDEN)
     ;
 
 // --- białe znaki ---
 WS
-    : [ \t\r\n]+ -> skip
+    : [ \t\r\n]+ -> channel(HIDDEN)
     ;
 
 // ==========================================
