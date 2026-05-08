@@ -43,7 +43,7 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 
 ## Zbiór tokenów
 
-| Kategoria | Nazwa tokenu | Regex / Definicja (case-insensitive) | Opis / wyrażenie | Przykłady w Pascalu |
+| Kategoria | Nazwa tokenu | Regex / Definicja | Opis / wyrażenie | Przykłady w Pascalu |
 | :--- | :--- | :--- | :--- | :--- |
 | **Słowa kluczowe (program)** | `KEYWORD_PROGRAM` | `PROGRAM` | deklaracja programu | `PROGRAM` |
 | **Słowa kluczowe (blok)** | `KEYWORD_VAR`, `KEYWORD_BEGIN`, `KEYWORD_END` | `VAR`, `BEGIN`, `END` | sekcje programu | `VAR, BEGIN, END` |
