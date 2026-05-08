@@ -1,0 +1,278 @@
+grammar Pascal;
+
+// ==========================================
+// PARSER
+// ==========================================
+
+program
+    : KEYWORD_PROGRAM IDENTIFIER (PUNCT_LPAREN identifierList PUNCT_RPAREN)? PUNCT_SEMI block PUNCT_DOT EOF
+    ;
+
+block
+    : declarations compoundStatement
+    ;
+
+declarations
+    : variableDeclarationPart subprogramDeclarations
+    ;
+
+variableDeclarationPart
+    : KEYWORD_VAR variableDeclaration+
+    | /* puste */
+    ;
+
+variableDeclaration
+    : identifierList COLON type PUNCT_SEMI
+    ;
+
+identifierList
+    : IDENTIFIER (PUNCT_COMMA IDENTIFIER)*
+    ;
+
+// --- Obsługa typów i tablic ---
+type
+    : simpleType
+    | arrayType
+    ;
+
+simpleType
+    : TYPE_INTEGER
+    | TYPE_REAL
+    | TYPE_BOOLEAN
+    | TYPE_CHAR
+    | TYPE_LONGINT
+    ;
+
+arrayType
+    : KEYWORD_ARRAY PUNCT_LBRACKET indexRange (PUNCT_COMMA indexRange)* PUNCT_RBRACKET KEYWORD_OF type
+    ;
+
+indexRange
+    : sign? constant PUNCT_DOTDOT sign? constant
+    ;
+
+sign
+    : ADD_OP
+    ;
+
+// --- Podprogramy ---
+subprogramDeclarations
+    : subprogramDeclaration*
+    ;
+
+subprogramDeclaration
+    : subprogramHead PUNCT_SEMI block PUNCT_SEMI
+    ;
+
+subprogramHead
+    : KEYWORD_PROCEDURE IDENTIFIER formalParameterList?
+    | KEYWORD_FUNCTION IDENTIFIER formalParameterList? COLON type
+    ;
+
+formalParameterList
+    : PUNCT_LPAREN formalParameterGroup (PUNCT_SEMI formalParameterGroup)* PUNCT_RPAREN
+    ;
+
+formalParameterGroup
+    : identifierList COLON type
+    ;
+
+// --- Zmienne ---
+variable
+    : IDENTIFIER (PUNCT_LBRACKET expression (PUNCT_COMMA expression)* PUNCT_RBRACKET)?
+    ;
+
+// --- Instrukcje ---
+compoundStatement
+    : KEYWORD_BEGIN statementList KEYWORD_END
+    ;
+
+statementList
+    : statement (PUNCT_SEMI statement)*
+    ;
+
+statement
+    : assignmentStatement
+    | compoundStatement
+    | ifStatement
+    | whileStatement
+    | forStatement
+    | repeatStatement
+    | caseStatement
+    | procedureCall
+    | /* puste */
+    ;
+
+assignmentStatement
+    : variable ASSIGN expression
+    ;
+
+caseStatement
+    : KEYWORD_CASE expression KEYWORD_OF caseElement+ KEYWORD_END
+    ;
+
+caseElement
+    : caseLabelList COLON statement PUNCT_SEMI
+    ;
+
+caseLabelList
+    : constant (PUNCT_COMMA constant)*
+    ;
+
+constant
+    : NUMBER
+    | STRING
+    | BOOLEAN_CONST
+    ;
+
+procedureCall
+    : IDENTIFIER (PUNCT_LPAREN argumentList? PUNCT_RPAREN)?
+    ;
+
+argumentList
+    : expression (PUNCT_COMMA expression)*
+    ;
+
+ifStatement
+    : KEYWORD_IF expression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
+    ;
+
+whileStatement
+    : KEYWORD_WHILE expression KEYWORD_DO statement
+    ;
+
+repeatStatement
+    : KEYWORD_REPEAT statementList KEYWORD_UNTIL expression
+    ;
+
+forStatement
+    : KEYWORD_FOR IDENTIFIER ASSIGN expression KEYWORD_TO expression KEYWORD_DO statement
+    ;
+
+// ==========================================
+// WYRAŻENIA
+// ==========================================
+
+expression
+    : simpleExpression (REL_OP simpleExpression)?
+    ;
+
+simpleExpression
+    : term ((ADD_OP | LOG_OP_OR) term)*
+    ;
+
+term
+    : factor ((MUL_OP | INT_OP | LOG_OP_AND) factor)*
+    ;
+
+factor
+    : LOG_OP_NOT factor
+    | ADD_OP factor
+    | procedureCall
+    | variable
+    | NUMBER
+    | BOOLEAN_CONST
+    | STRING
+    | PUNCT_LPAREN expression PUNCT_RPAREN
+    ;
+
+// ==========================================
+// LEXER
+// ==========================================
+
+// --- słowa kluczowe ---
+KEYWORD_PROGRAM   : P R O G R A M ;
+KEYWORD_VAR       : V A R ;
+KEYWORD_BEGIN     : B E G I N ;
+KEYWORD_END       : E N D ;
+KEYWORD_IF        : I F ;
+KEYWORD_THEN      : T H E N ;
+KEYWORD_ELSE      : E L S E ;
+KEYWORD_WHILE     : W H I L E ;
+KEYWORD_DO        : D O ;
+KEYWORD_FOR       : F O R ;
+KEYWORD_TO        : T O ;
+KEYWORD_PROCEDURE : P R O C E D U R E ;
+KEYWORD_FUNCTION  : F U N C T I O N ;
+KEYWORD_REPEAT    : R E P E A T ;
+KEYWORD_UNTIL     : U N T I L ;
+KEYWORD_CASE      : C A S E ;
+KEYWORD_OF        : O F ;
+KEYWORD_ARRAY     : A R R A Y ;
+
+// --- typy ---
+TYPE_INTEGER : I N T E G E R ;
+TYPE_REAL    : R E A L ;
+TYPE_BOOLEAN : B O O L E A N ;
+TYPE_CHAR    : C H A R ;
+TYPE_LONGINT : L O N G I N T ;
+
+// --- operatory ---
+REL_OP  : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
+ADD_OP  : '+' | '-' ;
+MUL_OP  : '*' | '/' ;
+INT_OP  : D I V | M O D ;
+
+// --- logiczne ---
+LOG_OP_AND : A N D ;
+LOG_OP_OR  : O R ;
+LOG_OP_NOT : N O T ;
+
+// --- przypisanie ---
+ASSIGN : ':=' ;
+
+// --- interpunkcja ---
+PUNCT_SEMI     : ';' ;
+PUNCT_COMMA    : ',' ;
+PUNCT_DOT      : '.' ;
+PUNCT_LPAREN   : '(' ;
+PUNCT_RPAREN   : ')' ;
+PUNCT_LBRACKET : '[' ;
+PUNCT_RBRACKET : ']' ;
+PUNCT_DOTDOT   : '..' ;
+
+// --- inne ---
+COLON : ':' ;
+
+// --- stringi ---
+STRING
+    : '\'' ( '\'\'' | ~'\'' )* '\''
+    ;
+
+// --- wartości ---
+BOOLEAN_CONST
+    : T R U E
+    | F A L S E
+    ;
+
+IDENTIFIER
+    : [a-zA-Z_] [a-zA-Z0-9_]*
+    ;
+
+NUMBER
+    : [0-9]+ ('.' [0-9]+)?
+    ;
+
+// --- komentarze ---
+COMMENT
+    : ('{' .*? '}' | '(*' .*? '*)') -> channel(HIDDEN)
+    ;
+
+// --- białe znaki ---
+WS
+    : [ \t\r\n]+ -> channel(HIDDEN)
+    ;
+
+// ==========================================
+// CASE INSENSITIVE
+// ==========================================
+
+fragment A:[aA]; fragment B:[bB]; fragment C:[cC];
+fragment D:[dD]; fragment E:[eE]; fragment F:[fF];
+fragment G:[gG]; fragment H:[hH]; fragment I:[iI];
+fragment J:[jJ]; fragment K:[kK]; fragment L:[lL];
+fragment M:[mM]; fragment N:[nN]; fragment O:[oO];
+fragment P:[pP]; fragment Q:[qQ]; fragment R:[rR];
+fragment S:[sS]; fragment T:[tT]; fragment U:[uU];
+fragment V:[vV]; fragment W:[wW]; fragment X:[xX];
+fragment Y:[yY]; fragment Z:[zZ];
