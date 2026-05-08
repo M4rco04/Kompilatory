@@ -46,8 +46,10 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 Podczas mapowania języka Pascal na C zastosowano następujące rozwiązania:
 
 * **Indeksowanie Tablic (0-based vs 1-based):** Ponieważ Pascal pozwala na definiowanie dowolnych zakresów (np. `1..5`), a język C zawsze indeksuje od `0`, translator automatycznie powiększa rozmiar deklarowanej tablicy w C o 1. Pozwala to na bezpieczne korzystanie z oryginalnych pascalowych indeksów w pętlach `for` bez ryzyka błędu *Segmentation Fault*.
-* **Procedury bez parametrów a Zmienne:** Ze względu na brak obowiązkowych nawiasów `()` przy wywoływaniu procedur w Pascalu (np. `Randomize;`), translator analizuje kontekst (rodzica w drzewie AST). Jeśli identyfikator występuje jako samodzielna instrukcja (`Statement`), jest traktowany jako funkcja i otrzymuje nawiasy. W przeciwnym razie jest traktowany jako zmienna.
-* **Wbudowane funkcje wejścia/wyjścia:** Procedury `Write` oraz `WriteLn` są transformowane w wywołania funkcji `printf` z biblioteki standardowej `<stdio.h>`, włącznie z predykcją prostych masek formatujących (np. `%d ` dla zmiennych).
+* **Procedury bez parametrów a Zmienne:** Ze względu na brak obowiązkowych nawiasów `()` przy wywoływaniu procedur w Pascalu, translator analizuje kontekst (rodzica w drzewie AST). Jeśli identyfikator występuje jako samodzielna instrukcja (`Statement`), jest traktowany jako funkcja i otrzymuje nawiasy. W przeciwnym razie jest traktowany jako zmienna.
+* **Obsługa podprogramów i instrukcji powrotu:** Pascal zwraca wartości z funkcji poprzez przypisanie ich do nazwy funkcji (np. `NazwaFunkcji := Wartość;`). Translator śledzi aktualnie przetwarzany blok i automatycznie zamienia takie przypisania na instrukcję `return Wartość;` w języku C.
+* **Wbudowane funkcje wejścia/wyjścia:** Procedury `Write` oraz `WriteLn` są transformowane w wywołania funkcji `printf` z biblioteki standardowej `<stdio.h>`, włącznie z inteligentną budową masek formatujących dla zmiennych i tekstów. Z kolei instrukcje `Read` i `ReadLn` są tłumaczone na `scanf` (z automatycznym dodawaniem znaku adresu `&`) lub `getchar()`.
+* **Generowanie liczb pseudolosowych:** Wbudowane w Pascala procedury `Randomize` oraz `Random` są w locie zamieniane na standardowe funkcje z biblioteki `<time.h>` w C, czyli odpowiednio `srand(time(NULL))` oraz modulo z `rand()`.
 
 ---
 
@@ -371,43 +373,46 @@ fragment Y:[yY]; fragment Z:[zZ];
 
 ---
 
-## 🏗️ Architektura Rozwiązania
+# 🏗️ Architektura Rozwiązania
 
 Aplikacja została podzielona na trzy główne moduły w pliku głównym (`main.py`):
 
-### 1. Klasa `ASTBuilder`
+## 1. Klasa `ASTBuilder`
 Odpowiada za wczytanie kodu źródłowego i przekształcenie go w drzewo składniowe (AST).
-* `__init__(self, file_path: str)` - konstruktor przyjmujący ścieżkę do pliku Pascala.
-* `build(self)` - inicjalizuje strumień wejściowy, uruchamia `PascalLexer` do tokenizacji oraz `PascalParser` do analizy składniowej. Zwraca główny węzeł drzewa (`program`).
 
-### 2. Klasa `CodeGeneratorVisitor`
+* **`__init__(self, file_path: str)`** – konstruktor przyjmujący ścieżkę do pliku Pascala.
+* **`build(self)`** – inicjalizuje strumień wejściowy, uruchamia `PascalLexer` do tokenizacji oraz `PascalParser` do analizy składniowej. Zwraca główny węzeł drzewa (`program`).
+
+## 2. Klasa `CodeGeneratorVisitor`
 Główny silnik tłumaczący. Dziedziczy po wygenerowanej klasie `PascalVisitor`. Każda metoda zaczynająca się od `visit...` odpowiada za przetworzenie konkretnej reguły z naszej gramatyki.
 
-**Metody pomocnicze:**
-* `__init__(self)` - inicjalizuje licznik wcięć (`self.indent_level`), niezbędny do formatowania kodu C.
-* `get_indent(self)` - zwraca ciąg spacji odpowiadający aktualnemu poziomowi zagnieżdżenia kodu.
+### Metody pomocnicze:
+* **`__init__(self)`** – inicjalizuje licznik wcięć (`self.indent_level`) niezbędny do formatowania kodu C, oraz zmienną `self.current_function` śledzącą kontekst funkcji dla instrukcji `return`.
+* **`get_indent(self)`** – zwraca ciąg spacji odpowiadający aktualnemu poziomowi zagnieżdżenia kodu.
 
-**Przetwarzanie struktury programu:**
-* `visitProgram(self, ctx)` - punkt wejścia. Generuje nagłówki (`#include`), wywołuje przetwarzanie zmiennych, a następnie tworzy funkcję `int main()`.
-* `visitDeclarations(self, ctx)`, `visitVariableDeclarationPart(self, ctx)` - nawigują po drzewie w poszukiwaniu bloku `VAR`.
-* `visitVariableDeclaration(self, ctx)` - tłumaczy deklaracje zmiennych. Mapuje typy (np. `INTEGER` -> `int`) oraz obsługuje tablice, automatycznie powiększając ich zadeklarowany rozmiar o +1 (aby obsłużyć indeksy od zera w C).
+### Przetwarzanie struktury programu i podprogramów:
+* **`visitProgram(self, ctx)`** – punkt wejścia. Generuje nagłówki (m.in. `<time.h>`), wywołuje przetwarzanie zmiennych oraz tworzy główną funkcję `int main()`.
+* **`visitDeclarations(self, ctx)`, `visitVariableDeclarationPart(self, ctx)`** – nawigują po drzewie w poszukiwaniu bloku `VAR`.
+* **`visitVariableDeclaration(self, ctx)`** – tłumaczy deklaracje zmiennych. Mapuje typy (np. `INTEGER` -> `int`) oraz obsługuje tablice, automatycznie powiększając ich rozmiar o 1.
+* **`visitSubprogramDeclarations(self, ctx)` i `visitSubprogramDeclaration(self, ctx)`** – analizują i tłumaczą bloki `PROCEDURE` oraz `FUNCTION`, wyciągając ich ciało oraz przypisując do nich lokalne zmienne.
+* **`visitSubprogramHead(self, ctx)`, `visitFormalParameterList(self, ctx)`, `visitFormalParameterGroup(self, ctx)`** – odpowiedniki odpowiedzialne za parsowanie nagłówków funkcji i przekazywanych parametrów.
 
-**Przetwarzanie instrukcji i sterowania:**
-* `visitCompoundStatement(self, ctx)` - obsługuje bloki `BEGIN ... END`, rekurencyjnie przetwarzając instrukcje wewnątrz.
-* `visitStatement(self, ctx)` - sprawdza typ instrukcji i w razie potrzeby dokleja średnik `;` dla samodzielnych wywołań procedur.
-* `visitAssignmentStatement(self, ctx)` - generuje kod przypisania (`zmienna = wyrażenie;`).
-* `visitIfStatement`, `visitWhileStatement`, `visitForStatement`, `visitRepeatStatement` - metody odpowiedzialne za tłumaczenie struktur warunkowych i pętli na ich odpowiedniki w języku C (`if-else`, `while`, `for`, `do-while`).
-* `visitProcedureCall(self, ctx)` - obsługuje wywołania procedur i funkcji. Zawiera dedykowaną logikę rozpoznającą wbudowane funkcje Pascala `Write` i `WriteLn`, tłumacząc je na `printf` (wraz z wstawianiem odpowiednich masek `%d`). 
+### Przetwarzanie instrukcji i sterowania:
+* **`visitCompoundStatement(self, ctx)`** – obsługuje bloki `BEGIN ... END`, rekurencyjnie przetwarzając instrukcje wewnątrz.
+* **`visitStatement(self, ctx)`** – sprawdza typ instrukcji i w razie potrzeby dokleja średnik `;` dla samodzielnych wywołań procedur.
+* **`visitAssignmentStatement(self, ctx)`** – generuje kod przypisania (`zmienna = wyrażenie;`). Automatycznie wykrywa również moment, w którym przypisanie odnosi się do nazwy obecnie przetwarzanej funkcji i zamienia je na C-podobne `return`.
+* **`visitIfStatement`, `visitWhileStatement`, `visitForStatement`, `visitRepeatStatement`** – tłumaczą struktury warunkowe i pętle na odpowiedniki w C. Metoda `visitRepeatStatement` iteruje jawnie po liście instrukcji, zapewniając właściwe wygenerowanie ciała pętli `do-while`.
+* **`visitProcedureCall(self, ctx)`** – obsługuje wywołania procedur i funkcji. Zawiera dedykowaną logikę rozpoznającą i przetwarzającą wbudowane funkcje Pascala: `Write`/`WriteLn` (`printf` z detekcją maski typu), `Read`/`ReadLn` (`scanf` i `getchar`), a także `Randomize`/`Random` (`srand` i `rand`).
 
-**Przetwarzanie wyrażeń matematycznych i logicznych:**
-* `visitExpression`, `visitSimpleExpression`, `visitTerm`, `visitFactor` - zbiór metod odpowiedzialnych za ewaluację wyrażeń. Zmieniają pascalowe operatory (np. `=`, `<>`, `AND`, `OR`, `DIV`, `MOD`) na ich odpowiedniki z języka C (`==`, `!=`, `&&`, `||`, `/`, `%`).
+### Przetwarzanie wyrażeń matematycznych i logicznych:
+* **`visitExpression`, `visitSimpleExpression`, `visitTerm`, `visitFactor`** – zbiór metod odpowiedzialnych za ewaluację wyrażeń. Zmieniają pascalowe operatory (np. `=`, `<>`, `AND`, `OR`, `DIV`, `MOD`) na ich odpowiedniki z języka C (`==`, `!=`, `&&`, `||`, `/`, `%`).
 
-### 3. Klasa `CompilerCore`
+## 3. Klasa `CompilerCore`
 Klasa zarządzająca całym procesem i plikami.
-* `__init__(self, input_file: str, output_file: str)` - zapisuje ścieżki pliku wejściowego i wyjściowego.
-* `compile(self)` - orkiestruje pracę: wywołuje budowanie AST, uruchamia wizytatora generującego kod C, a na koniec zapisuje wynik do pliku, wypisując status w konsoli. Posiada blok `try-except` do łapania błędów kompilacji.
 
-### 4. Punkt wejścia `main()`
-* `main()` - funkcja wywoływana przy uruchomieniu skryptu. Pobiera argumenty z terminala (`sys.argv`), ustala nazwy plików (domyślnie zmienia rozszerzenie wejścia na `.c`) i uruchamia klasę `CompilerCore`.
+* **`__init__(self, input_file: str, output_file: str)`** – zapisuje ścieżki pliku wejściowego i wyjściowego.
+* **`compile(self)`** – orkiestruje pracę: wywołuje budowanie AST, uruchamia wizytatora generującego kod C, a na koniec zapisuje wynik do pliku, wypisując status w konsoli. Posiada blok `try-except` do łapania błędów kompilacji.
 
+## 4. Punkt wejścia `main()`
+* **`main()`** – funkcja wywoływana przy uruchomieniu skryptu. Pobiera argumenty z terminala (`sys.argv`), ustala nazwy plików (domyślnie zmienia rozszerzenie wejścia na `.c`) i uruchamia klasę `CompilerCore`.
 ---
