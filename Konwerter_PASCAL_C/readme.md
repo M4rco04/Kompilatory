@@ -41,6 +41,16 @@ Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który p
 
 ---
 
+## 💡 Przyjęte rozwiązania translacyjne
+
+Podczas mapowania języka Pascal na C zastosowano następujące rozwiązania:
+
+* **Indeksowanie Tablic (0-based vs 1-based):** Ponieważ Pascal pozwala na definiowanie dowolnych zakresów (np. `1..5`), a język C zawsze indeksuje od `0`, translator automatycznie powiększa rozmiar deklarowanej tablicy w C o 1. Pozwala to na bezpieczne korzystanie z oryginalnych pascalowych indeksów w pętlach `for` bez ryzyka błędu *Segmentation Fault*.
+* **Procedury bez parametrów a Zmienne:** Ze względu na brak obowiązkowych nawiasów `()` przy wywoływaniu procedur w Pascalu (np. `Randomize;`), translator analizuje kontekst (rodzica w drzewie AST). Jeśli identyfikator występuje jako samodzielna instrukcja (`Statement`), jest traktowany jako funkcja i otrzymuje nawiasy. W przeciwnym razie jest traktowany jako zmienna.
+* **Wbudowane funkcje wejścia/wyjścia:** Procedury `Write` oraz `WriteLn` są transformowane w wywołania funkcji `printf` z biblioteki standardowej `<stdio.h>`, włącznie z predykcją prostych masek formatujących (np. `%d ` dla zmiennych).
+
+---
+
 ## Zbiór tokenów
 
 | Kategoria | Nazwa tokenu | Regex / Definicja | Opis / wyrażenie | Przykłady w Pascalu |
@@ -358,6 +368,49 @@ fragment S:[sS]; fragment T:[tT]; fragment U:[uU];
 fragment V:[vV]; fragment W:[wW]; fragment X:[xX];
 fragment Y:[yY]; fragment Z:[zZ];
 ```
+
+---
+
+## 🏗️ Architektura Rozwiązania
+
+Aplikacja została podzielona na trzy główne moduły w pliku głównym (`main.py`):
+
+### 1. Klasa `ASTBuilder`
+Odpowiada za wczytanie kodu źródłowego i przekształcenie go w drzewo składniowe (AST).
+* `__init__(self, file_path: str)` - konstruktor przyjmujący ścieżkę do pliku Pascala.
+* `build(self)` - inicjalizuje strumień wejściowy, uruchamia `PascalLexer` do tokenizacji oraz `PascalParser` do analizy składniowej. Zwraca główny węzeł drzewa (`program`).
+
+### 2. Klasa `CodeGeneratorVisitor`
+Główny silnik tłumaczący. Dziedziczy po wygenerowanej klasie `PascalVisitor`. Każda metoda zaczynająca się od `visit...` odpowiada za przetworzenie konkretnej reguły z naszej gramatyki.
+
+**Metody pomocnicze:**
+* `__init__(self)` - inicjalizuje licznik wcięć (`self.indent_level`), niezbędny do formatowania kodu C.
+* `get_indent(self)` - zwraca ciąg spacji odpowiadający aktualnemu poziomowi zagnieżdżenia kodu.
+
+**Przetwarzanie struktury programu:**
+* `visitProgram(self, ctx)` - punkt wejścia. Generuje nagłówki (`#include`), wywołuje przetwarzanie zmiennych, a następnie tworzy funkcję `int main()`.
+* `visitDeclarations(self, ctx)`, `visitVariableDeclarationPart(self, ctx)` - nawigują po drzewie w poszukiwaniu bloku `VAR`.
+* `visitVariableDeclaration(self, ctx)` - tłumaczy deklaracje zmiennych. Mapuje typy (np. `INTEGER` -> `int`) oraz obsługuje tablice, automatycznie powiększając ich zadeklarowany rozmiar o +1 (aby obsłużyć indeksy od zera w C).
+
+**Przetwarzanie instrukcji i sterowania:**
+* `visitCompoundStatement(self, ctx)` - obsługuje bloki `BEGIN ... END`, rekurencyjnie przetwarzając instrukcje wewnątrz.
+* `visitStatement(self, ctx)` - sprawdza typ instrukcji i w razie potrzeby dokleja średnik `;` dla samodzielnych wywołań procedur.
+* `visitAssignmentStatement(self, ctx)` - generuje kod przypisania (`zmienna = wyrażenie;`).
+* `visitIfStatement`, `visitWhileStatement`, `visitForStatement`, `visitRepeatStatement` - metody odpowiedzialne za tłumaczenie struktur warunkowych i pętli na ich odpowiedniki w języku C (`if-else`, `while`, `for`, `do-while`).
+* `visitProcedureCall(self, ctx)` - obsługuje wywołania procedur i funkcji. Zawiera dedykowaną logikę rozpoznającą wbudowane funkcje Pascala `Write` i `WriteLn`, tłumacząc je na `printf` (wraz z wstawianiem odpowiednich masek `%d`). 
+
+**Przetwarzanie wyrażeń matematycznych i logicznych:**
+* `visitExpression`, `visitSimpleExpression`, `visitTerm`, `visitFactor` - zbiór metod odpowiedzialnych za ewaluację wyrażeń. Zmieniają pascalowe operatory (np. `=`, `<>`, `AND`, `OR`, `DIV`, `MOD`) na ich odpowiedniki z języka C (`==`, `!=`, `&&`, `||`, `/`, `%`).
+
+### 3. Klasa `CompilerCore`
+Klasa zarządzająca całym procesem i plikami.
+* `__init__(self, input_file: str, output_file: str)` - zapisuje ścieżki pliku wejściowego i wyjściowego.
+* `compile(self)` - orkiestruje pracę: wywołuje budowanie AST, uruchamia wizytatora generującego kod C, a na koniec zapisuje wynik do pliku, wypisując status w konsoli. Posiada blok `try-except` do łapania błędów kompilacji.
+
+### 4. Punkt wejścia `main()`
+* `main()` - funkcja wywoływana przy uruchomieniu skryptu. Pobiera argumenty z terminala (`sys.argv`), ustala nazwy plików (domyślnie zmienia rozszerzenie wejścia na `.c`) i uruchamia klasę `CompilerCore`.
+
+---
 
 ---
 
