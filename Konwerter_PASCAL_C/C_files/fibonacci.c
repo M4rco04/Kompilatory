@@ -7,14 +7,14 @@ int n, i;
 int a, b, c;
 
 int main(int argc, char *argv[]) {
-    printf("--- Obliczanie n-tego wyrazu Ciagu Fibonacciego ---");
-    printf("%d ", "Podaj, ktory wyraz ciagu chcesz obliczyc (n >= 0): ");
-    readln(n);
+    printf("--- Obliczanie n-tego wyrazu Ciagu Fibonacciego ---\n");
+    printf("Podaj, ktory wyraz ciagu chcesz obliczyc (n >= 0): ");
+    scanf("%d", &n);
     if (n == 0) {
-        printf("Wyraz nr 0 to: 0");
+        printf("Wyraz nr 0 to: 0\n");
     } else {
         if (n == 1) {
-        printf("Wyraz nr 1 to: 1");
+        printf("Wyraz nr 1 to: 1\n");
     } else {
             a = 0;
     b = 1;
@@ -24,12 +24,12 @@ int main(int argc, char *argv[]) {
     b = c;
 
     }
-    printf("%d ", "Wyraz nr ", n, " to: ", b);
+    printf("Wyraz nr %d to: %d\n", n, b);
 
     }
     }
     printf("\n");
-    printf("%d ", "Nacisnij ENTER, aby zakonczyc...");
-    readln();
+    printf("Nacisnij ENTER, aby zakonczyc...\n");
+    getchar();
     return 0;
 }

@@ -30,6 +30,7 @@ class CodeGeneratorVisitor(PascalVisitor):
     
     def __init__(self):
         self.indent_level = 0
+        self.current_function = None # Służy do śledzenia czy jesteśmy wewnątrz funkcji (dla 'return')
     
     def get_indent(self):
         return "    " * self.indent_level
@@ -56,14 +57,19 @@ class CodeGeneratorVisitor(PascalVisitor):
         return c_code
 
     def visitDeclarations(self, ctx: PascalParser.DeclarationsContext):
+        code = ""
         if ctx.variableDeclarationPart():
-            return self.visit(ctx.variableDeclarationPart())
-        return ""
+            code += self.visit(ctx.variableDeclarationPart())
+        
+        if ctx.subprogramDeclarations():
+            code += self.visit(ctx.subprogramDeclarations())
+            
+        return code
 
     def visitVariableDeclarationPart(self, ctx: PascalParser.VariableDeclarationPartContext):
         code = ""
         for decl in ctx.variableDeclaration():
-            code += self.visit(decl)
+            code += self.get_indent() + self.visit(decl)
         return code
 
     def visitVariableDeclaration(self, ctx: PascalParser.VariableDeclarationContext):
@@ -76,13 +82,10 @@ class CodeGeneratorVisitor(PascalVisitor):
             
             for range_ctx in array_ctx.indexRange():
                 upper_bound = range_ctx.constant(1).getText()
-                
-                # Dodajemy +1 do górnej granicy, aby C pomieściło pascalowy indeks
                 if upper_bound.isdigit():
                     size = str(int(upper_bound) + 1)
                 else:
                     size = f"{upper_bound} + 1"
-                    
                 array_dims += f"[{size}]"
         else:
             pascal_type_ctx = ctx.type_().simpleType()
@@ -102,6 +105,84 @@ class CodeGeneratorVisitor(PascalVisitor):
             identifiers.append(f"{ident.getText()}{array_dims}")
             
         return f"{c_type} {', '.join(identifiers)};\n"
+
+    def visitSubprogramDeclarations(self, ctx: PascalParser.SubprogramDeclarationsContext):
+        code = "\n"
+        for decl in ctx.subprogramDeclaration():
+            code += self.visit(decl) + "\n"
+        return code
+
+    def visitSubprogramDeclaration(self, ctx: PascalParser.SubprogramDeclarationContext):
+        head_code, is_function, func_name = self.visit(ctx.subprogramHead())
+        
+        # Zapisujemy nazwę bieżącej funkcji, by móc wygenerować 'return'
+        self.current_function = func_name if is_function else None
+        
+        c_code = f"{head_code} {{\n"
+        self.indent_level += 1
+        
+        local_vars = self.visit(ctx.block().declarations())
+        if local_vars:
+            c_code += local_vars + "\n"
+            
+        body = self.visit(ctx.block().compoundStatement())
+        if body:
+            c_code += body
+            
+        self.indent_level -= 1
+        c_code += self.get_indent() + "}\n"
+        
+        self.current_function = None
+        return c_code
+
+    def visitSubprogramHead(self, ctx: PascalParser.SubprogramHeadContext):
+        name = ctx.IDENTIFIER().getText()
+        
+        params = ""
+        if ctx.formalParameterList():
+            params = self.visit(ctx.formalParameterList())
+            
+        is_function = ctx.KEYWORD_FUNCTION() is not None
+        c_type = "void"
+        
+        if is_function:
+            pascal_type_ctx = ctx.type_().simpleType()
+            if pascal_type_ctx:
+                if pascal_type_ctx.TYPE_INTEGER() or pascal_type_ctx.TYPE_LONGINT():
+                    c_type = "int"
+                elif pascal_type_ctx.TYPE_REAL():
+                    c_type = "float"
+                elif pascal_type_ctx.TYPE_BOOLEAN():
+                    c_type = "bool"
+                elif pascal_type_ctx.TYPE_CHAR():
+                    c_type = "char"
+                    
+        return f"{c_type} {name}({params})", is_function, name
+
+    def visitFormalParameterList(self, ctx: PascalParser.FormalParameterListContext):
+        params = []
+        for group in ctx.formalParameterGroup():
+            params.extend(self.visit(group))
+        return ", ".join(params)
+
+    def visitFormalParameterGroup(self, ctx: PascalParser.FormalParameterGroupContext):
+        pascal_type_ctx = ctx.type_().simpleType()
+        c_type = "void"
+        if pascal_type_ctx:
+            if pascal_type_ctx.TYPE_INTEGER() or pascal_type_ctx.TYPE_LONGINT():
+                c_type = "int"
+            elif pascal_type_ctx.TYPE_REAL():
+                c_type = "float"
+            elif pascal_type_ctx.TYPE_BOOLEAN():
+                c_type = "bool"
+            elif pascal_type_ctx.TYPE_CHAR():
+                c_type = "char"
+                
+        params = []
+        for ident in ctx.identifierList().IDENTIFIER():
+            params.append(f"{c_type} {ident.getText()}")
+            
+        return params
         
     def visitCompoundStatement(self, ctx: PascalParser.CompoundStatementContext):
         statements_code = ""
@@ -127,6 +208,11 @@ class CodeGeneratorVisitor(PascalVisitor):
     def visitAssignmentStatement(self, ctx: PascalParser.AssignmentStatementContext):
         var_name = self.visit(ctx.variable())
         expr = self.visit(ctx.expression())
+        
+        # Transformacja pascalowego zwracania funkcji (NazwaFunkcji := X) na C (return X)
+        if self.current_function and var_name.lower() == self.current_function.lower():
+            return f"return {expr};"
+            
         return f"{var_name} = {expr};"
 
     def visitVariable(self, ctx: PascalParser.VariableContext):
@@ -166,33 +252,67 @@ class CodeGeneratorVisitor(PascalVisitor):
 
     def visitRepeatStatement(self, ctx: PascalParser.RepeatStatementContext):
         cond = self.visit(ctx.expression())
-        stmts = self.visit(ctx.statementList())
-        return f"do {{\n{stmts}{self.get_indent()}}} while (!({cond}));"
+        
+        stmts_code = ""
+        for stmt in ctx.statementList().statement():
+            stmt_code = self.visit(stmt)
+            if stmt_code:
+                stmts_code += self.get_indent() + "    " + stmt_code + "\n"
+                
+        return f"do {{\n{stmts_code}{self.get_indent()}}} while (!({cond}));"
 
     def visitProcedureCall(self, ctx: PascalParser.ProcedureCallContext):
         name = ctx.IDENTIFIER().getText()
         
-        args = ""
+        args_list = []
         if ctx.argumentList():
-            args_list = [self.visit(expr) for expr in ctx.argumentList().expression()]
-            args = ", ".join(args_list)
+            if hasattr(ctx.argumentList(), 'argument'):
+                elements = ctx.argumentList().argument()
+            else:
+                elements = ctx.argumentList().expression()
+                
+            args_list = [str(self.visit(e)).strip() for e in elements]
             
         if name.upper() in ["WRITE", "WRITELN"]:
-            if not args:
+            if not args_list:
                 return 'printf("\\n")'
+                
+            format_str = ""
+            vars_list = []
             
-            if '"' in args and ',' not in args:
-                return f'printf({args})'
+            for arg in args_list:
+                if arg.startswith('"') and arg.endswith('"'):
+                    format_str += arg[1:-1]
+                else:
+                    format_str += "%d"
+                    vars_list.append(arg)
+                    
+            if name.upper() == "WRITELN":
+                format_str += "\\n"
+                
+            if vars_list:
+                c_args = ", ".join(vars_list)
+                return f'printf("{format_str}", {c_args})'
             else:
-                return f'printf("%d ", {args})'
-            
+                return f'printf("{format_str}")'
+
+        if name.upper() in ["READ", "READLN"]:
+            if not args_list:
+                return 'getchar()'
+            else:
+                format_mask = " ".join(["%d"] * len(args_list))
+                c_args = ", ".join([f"&{arg}" for arg in args_list])
+                return f'scanf("{format_mask}", {c_args})'
+                
+        args_str = ", ".join(args_list) if args_list else ""
+        
         if not ctx.PUNCT_LPAREN():
             if not isinstance(ctx.parentCtx, PascalParser.StatementContext):
                 return name
             else:
                 return f"{name}()"
                 
-        return f"{name}({args})"
+        return f"{name}({args_str})"
 
     def visitExpression(self, ctx: PascalParser.ExpressionContext):
         left = self.visit(ctx.simpleExpression(0))
