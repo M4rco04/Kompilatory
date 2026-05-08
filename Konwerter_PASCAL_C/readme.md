@@ -411,6 +411,3 @@ Klasa zarządzająca całym procesem i plikami.
 * `main()` - funkcja wywoływana przy uruchomieniu skryptu. Pobiera argumenty z terminala (`sys.argv`), ustala nazwy plików (domyślnie zmienia rozszerzenie wejścia na `.c`) i uruchamia klasę `CompilerCore`.
 
 ---
-
----
-
