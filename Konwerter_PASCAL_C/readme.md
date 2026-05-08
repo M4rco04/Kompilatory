@@ -88,7 +88,7 @@ grammar Pascal;
 // ==========================================
 
 program
-    : KEYWORD_PROGRAM IDENTIFIER PUNCT_SEMI block PUNCT_DOT EOF
+    : KEYWORD_PROGRAM IDENTIFIER (PUNCT_LPAREN identifierList PUNCT_RPAREN)? PUNCT_SEMI block PUNCT_DOT EOF
     ;
 
 block
@@ -114,8 +114,16 @@ identifierList
 
 // --- Obsługa typów i tablic ---
 type
-    : TYPE
+    : simpleType
     | arrayType
+    ;
+
+simpleType
+    : TYPE_INTEGER
+    | TYPE_REAL
+    | TYPE_BOOLEAN
+    | TYPE_CHAR
+    | TYPE_LONGINT
     ;
 
 arrayType
@@ -152,7 +160,7 @@ formalParameterGroup
     : identifierList COLON type
     ;
 
-// --- Zmienne (z uwzględnieniem odwołań do indeksów tablic) ---
+// --- Zmienne ---
 variable
     : IDENTIFIER (PUNCT_LBRACKET expression (PUNCT_COMMA expression)* PUNCT_RBRACKET)?
     ;
@@ -196,7 +204,6 @@ caseLabelList
 
 constant
     : NUMBER
-    | CHAR_CONST
     | STRING
     | BOOLEAN_CONST
     ;
@@ -210,15 +217,15 @@ argumentList
     ;
 
 ifStatement
-    : KEYWORD_IF booleanExpression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
+    : KEYWORD_IF expression KEYWORD_THEN statement (KEYWORD_ELSE statement)?
     ;
 
 whileStatement
-    : KEYWORD_WHILE booleanExpression KEYWORD_DO statement
+    : KEYWORD_WHILE expression KEYWORD_DO statement
     ;
 
 repeatStatement
-    : KEYWORD_REPEAT statementList KEYWORD_UNTIL booleanExpression
+    : KEYWORD_REPEAT statementList KEYWORD_UNTIL expression
     ;
 
 forStatement
@@ -231,14 +238,6 @@ forStatement
 
 expression
     : simpleExpression (REL_OP simpleExpression)?
-    ;
-
-booleanExpression
-    : expression REL_OP expression
-    | BOOLEAN_CONST
-    | LOG_OP_NOT booleanExpression
-    | booleanExpression (LOG_OP_AND | LOG_OP_OR) booleanExpression
-    | PUNCT_LPAREN booleanExpression PUNCT_RPAREN
     ;
 
 simpleExpression
@@ -257,7 +256,6 @@ factor
     | NUMBER
     | BOOLEAN_CONST
     | STRING
-    | CHAR_CONST
     | PUNCT_LPAREN expression PUNCT_RPAREN
     ;
 
@@ -286,13 +284,11 @@ KEYWORD_OF        : O F ;
 KEYWORD_ARRAY     : A R R A Y ;
 
 // --- typy ---
-TYPE
-    : I N T E G E R
-    | R E A L
-    | B O O L E A N
-    | C H A R
-    | L O N G I N T
-    ;
+TYPE_INTEGER : I N T E G E R ;
+TYPE_REAL    : R E A L ;
+TYPE_BOOLEAN : B O O L E A N ;
+TYPE_CHAR    : C H A R ;
+TYPE_LONGINT : L O N G I N T ;
 
 // --- operatory ---
 REL_OP  : '=' | '<>' | '<' | '<=' | '>' | '>=' ;
@@ -321,11 +317,7 @@ PUNCT_DOTDOT   : '..' ;
 // --- inne ---
 COLON : ':' ;
 
-// --- stringi i znaki ---
-CHAR_CONST
-    : '\'' ( '\'\'' | ~'\'' ) '\''
-    ;
-
+// --- stringi ---
 STRING
     : '\'' ( '\'\'' | ~'\'' )* '\''
     ;
