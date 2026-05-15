@@ -14,10 +14,10 @@ BEGIN
     { 2. NIEZGODNOŚĆ TYPÓW  }
 
     { Przykład A: Przypisanie znaku do liczby }
-    liczba := 'Z';
+    { liczba := 'Z'; }
 
     { Przykład B: Przypisanie liczby do zmiennej logicznej }
-    logika := 42;
+    { logika := 42; }
 
     { Przykład C: Próba wykonania operacji matematycznej na znaku }
     liczba := znak + 10;

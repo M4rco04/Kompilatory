@@ -509,3 +509,34 @@ Klasa zarządzająca całym procesem kompilacji i plikami.
 - Uruchamia `CompilerCore`
   
 ---
+
+## 5. 🛡️ System Obsługi Błędów (Error Handling)
+
+Kompilator posiada wbudowany, rygorystyczny system wychwytywania i raportowania błędów na dwóch głównych płaszczyznach: składniowej (podczas budowy drzewa AST) oraz semantycznej (podczas generowania kodu i weryfikacji typów). Głównym punktem zarządzającym tym procesem jest moduł `error_handler.py`.
+
+### 🚨 Błędy Składniowe (Syntax Errors)
+Analiza składniowa i leksykalna opiera się na narzędziu ANTLR. Standardowe, pobłażliwe zachowanie ANTLR (które próbuje kontynuować parsowanie po napotkaniu błędu) zostało całkowicie nadpisane.
+
+* **CustomErrorListener:** Autorska klasa dziedzicząca po `antlr4.error.ErrorListener`. Została podpięta zarówno do Lexera, jak i Parser'a w klasie `ASTBuilder`.
+* **Działanie:** System zatrzymuje proces translacji natychmiast przy **pierwszym napotkanym błędzie składniowym**, rzucając autorski wyjątek `SyntaxError`. Komunikat błędu precyzyjnie wskazuje **numer linii, kolumnę oraz przyczynę błędu**, co ułatwia debugowanie kodu źródłowego.
+
+### 🧠 Błędy Semantyczne (Semantic Errors)
+Weryfikacja logicznej poprawności programu odbywa się podczas przechodzenia przez drzewo AST w klasie `CodeGeneratorVisitor`, w ścisłej współpracy z inteligentną Tabelą Symboli (`SymbolTable`). Kompilator zgłasza błąd przerywając pracę, jeśli wykryje następujące nieścisłości:
+
+* **Zarządzanie Zasięgami i Deklaracjami:**
+  * **Podwójna deklaracja:** Próba ponownej deklaracji zmiennej lub podprogramu w tym samym zasięgu (Scope) skutkuje błędem.
+  * **Użycie niezadeklarowanej zmiennej/funkcji:** Odwołanie się do identyfikatora, którego nie ma w aktualnym stosie zasięgów, rzuca wyjątek informujący o braku deklaracji.
+  * **Błędy zakresów (Scope):** Tabela symboli dynamicznie otwiera (`enter_scope`) i zamyka (`exit_scope`) bloki pamięci dla zmiennych lokalnych. Zmienna zadeklarowana wewnątrz procedury "znika" po jej opuszczeniu, co chroni przed nieuprawnionym dostępem globalnym.
+* **System Typów i Rzutowanie:**
+  * **Niezgodność typów:** Przypisanie do zmiennej wartości o niekompatybilnym typie (np. `string` do `int`) zgłasza błąd. Dozwolone są tylko bezpieczne, niejawne rzutowania (np. rzutowanie wartości `int` na zmienną `float`).
+  * **Inferencja i weryfikacja rzutowania:** Wyrażenia są na bieżąco analizowane przez system inferencji (`infer_type`), który ustala ostateczny typ całego wyrażenia matematycznego/logicznego przed próbą przypisania.
+* **Weryfikacja Podprogramów:**
+  * **Walidacja argumentów:** Przy każdym wywołaniu procedury lub funkcji kompilator sprawdza, czy liczba przekazanych argumentów oraz ich typy pokrywają się z oryginalną deklaracją (definicją parametrów formalnych).
+  * **Niezgodność zwracanych typów:** Próba zwrócenia z funkcji wartości niezgodnej z zadeklarowanym typem w nagłówku funkcji kończy się przerwaniem kompilacji.
+  * **Brak zwracania wartości z funkcji:** Kompilator (za pomocą flagi `function_has_returned`) weryfikuje, czy wewnątrz bloku kodu funkcji nastąpiło przynajmniej jedno pomyślne przypisanie wyniku do nazwy tej funkcji. Brak takiego przypisania zgłasza błąd o braku instrukcji powrotu.
+
+### 🛑 Główne Klasy Wyjątków
+System bazuje na hierarchii wyjątków w języku Python:
+1. `CompilerException` – główna, bazowa klasa wyjątków kompilatora.
+2. `SyntaxError` – zgłaszana przez lekser/parser.
+3. `SemanticError` – zgłaszana przez tabelę symboli i wizytatora generatora kodu.

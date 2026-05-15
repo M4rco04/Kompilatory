@@ -5,16 +5,10 @@ from Tools.PascalLexer import PascalLexer
 from Tools.PascalParser import PascalParser
 from Tools.PascalVisitor import PascalVisitor
 
-# Importujemy naszą nową obsługę błędów
 from error_handler import CustomErrorListener, SymbolTable, CompilerException
 
 
-# ==========================================
-# 1. Moduł budujący drzewo (z obsługą błędów)
-# ==========================================
 class ASTBuilder:
-    """Odpowiada za wczytanie pliku i zbudowanie drzewa składniowego ANTLR."""
-
     def __init__(self, file_path: str):
         self.file_path = file_path
         self.stream = None
@@ -25,12 +19,10 @@ class ASTBuilder:
 
         input_stream = FileStream(self.file_path, encoding='utf-8')
 
-        # Inicjalizacja Lexera
         lexer = PascalLexer(input_stream)
         lexer.removeErrorListeners()
         lexer.addErrorListener(CustomErrorListener())
 
-        # Inicjalizacja strumienia i Parsera
         self.stream = CommonTokenStream(lexer)
         parser = PascalParser(self.stream)
         parser.removeErrorListeners()
@@ -39,15 +31,11 @@ class ASTBuilder:
         return parser.program()
 
 
-# ==========================================
-# 2. Moduł generujący kod C
-# ==========================================
 class CodeGeneratorVisitor(PascalVisitor):
-    """Przechodzi po drzewie AST Pascala i buduje tekstowy kod C."""
-
     def __init__(self, token_stream=None):
         self.indent_level = 0
         self.current_function = None
+        self.function_has_returned = False
         self.token_stream = token_stream
         self.processed_comments = set()
         self.symbol_table = SymbolTable()
@@ -71,8 +59,75 @@ class CodeGeneratorVisitor(PascalVisitor):
                         comments_code += f"/* {txt[2:-2].strip()} */\n{self.get_indent()}"
         return comments_code
 
-    # --- Struktura główna i deklaracje ---
+    # ==========================================
+    # SYSTEM INFERENCJI TYPÓW
+    # ==========================================
+    def infer_type(self, ctx):
+        if not ctx: return "void"
 
+        if isinstance(ctx, PascalParser.ExpressionContext):
+            if ctx.REL_OP(): return "bool"
+            return self.infer_type(ctx.simpleExpression(0))
+
+        if isinstance(ctx, PascalParser.SimpleExpressionContext):
+            t = self.infer_type(ctx.term(0))
+            for i in range(1, len(ctx.term())):
+                op = ctx.getChild(2 * i - 1).getText().upper()
+                if op == 'OR': return "bool"
+                t2 = self.infer_type(ctx.term(i))
+                if t == "float" or t2 == "float": t = "float"
+            return t
+
+        if isinstance(ctx, PascalParser.TermContext):
+            t = self.infer_type(ctx.factor(0))
+            for i in range(1, len(ctx.factor())):
+                op = ctx.getChild(2 * i - 1).getText().upper()
+                if op == 'AND': return "bool"
+                if op == '/': return "float"
+                if op in ['DIV', 'MOD']: return "int"
+                t2 = self.infer_type(ctx.factor(i))
+                if t == "float" or t2 == "float": t = "float"
+            return t
+
+        if isinstance(ctx, PascalParser.FactorContext):
+            if ctx.LOG_OP_NOT(): return "bool"
+            if ctx.ADD_OP(): return self.infer_type(ctx.factor(0))
+
+            if ctx.NUMBER():
+                return "float" if '.' in ctx.NUMBER().getText() else "int"
+            if ctx.BOOLEAN_CONST(): return "bool"
+
+            if ctx.STRING():
+                text = ctx.STRING().getText()
+                if len(text) == 3 or (len(text) == 4 and text == "''''"):
+                    return "char"
+                return "string"
+
+            if ctx.variable():
+                var_name = ctx.variable().IDENTIFIER().getText()
+                line = ctx.variable().IDENTIFIER().getSymbol().line
+                var_type = self.symbol_table.get_variable_type(var_name, line)
+                if ctx.variable().expression():
+                    return var_type.replace("_array", "")
+                return var_type
+
+            if ctx.procedureCall():
+                func_name = ctx.procedureCall().IDENTIFIER().getText()
+                line = ctx.procedureCall().IDENTIFIER().getSymbol().line
+
+                # ZABEZPIECZENIE: Sprawdzamy czy to nie jest zmienna zinterpretowana przez parser jako funkcja!
+                if not ctx.procedureCall().PUNCT_LPAREN() and self.symbol_table.is_variable(func_name):
+                    return self.symbol_table.get_variable_type(func_name, line).replace("_array", "")
+
+                func_info = self.symbol_table.get_function_info(func_name, line)
+                return func_info['return_type']
+
+            if ctx.expression():
+                return self.infer_type(ctx.expression())
+
+        return "void"
+
+    # --- Struktura główna i deklaracje ---
     def visitProgram(self, ctx: PascalParser.ProgramContext):
         program_name = ctx.IDENTIFIER().getText()
 
@@ -80,7 +135,13 @@ class CodeGeneratorVisitor(PascalVisitor):
         c_code += "#include <stdio.h>\n"
         c_code += "#include <stdlib.h>\n"
         c_code += "#include <stdbool.h>\n"
+        c_code += "#include <string.h>\n"
         c_code += "#include <time.h>\n\n"
+
+        c_code += "/* Helper do obslugi tekstow z Pascala */\n"
+        c_code += "char* _concat(const char* s1, const char* s2) {\n"
+        c_code += "    char* res = (char*)malloc(strlen(s1) + strlen(s2) + 1);\n"
+        c_code += "    strcpy(res, s1); strcat(res, s2); return res;\n}\n\n"
 
         c_code += self.visit(ctx.block().declarations()) or ""
 
@@ -99,10 +160,8 @@ class CodeGeneratorVisitor(PascalVisitor):
         code = ""
         if ctx.variableDeclarationPart():
             code += self.visit(ctx.variableDeclarationPart())
-
         if ctx.subprogramDeclarations():
             code += self.visit(ctx.subprogramDeclarations())
-
         return code
 
     def visitVariableDeclarationPart(self, ctx: PascalParser.VariableDeclarationPartContext):
@@ -114,8 +173,10 @@ class CodeGeneratorVisitor(PascalVisitor):
     def visitVariableDeclaration(self, ctx: PascalParser.VariableDeclarationContext):
         c_type = "void"
         array_dims = ""
+        is_array = False
 
         if ctx.type_().arrayType():
+            is_array = True
             array_ctx = ctx.type_().arrayType()
             pascal_type_ctx = array_ctx.type_().simpleType()
             for range_ctx in array_ctx.indexRange():
@@ -139,7 +200,7 @@ class CodeGeneratorVisitor(PascalVisitor):
         for ident in ctx.identifierList().IDENTIFIER():
             name = ident.getText()
             line = ident.getSymbol().line
-            self.symbol_table.declare_variable(name, c_type, line)
+            self.symbol_table.declare_variable(name, c_type, line, is_array)
             identifiers.append(f"{name}{array_dims}")
 
         return f"{c_type} {', '.join(identifiers)};\n"
@@ -155,8 +216,9 @@ class CodeGeneratorVisitor(PascalVisitor):
 
         head_code, is_function, func_name = self.visit(ctx.subprogramHead())
         self.current_function = func_name if is_function else None
+        self.function_has_returned = False
 
-        c_code = f"{head_code} {{\n"
+        c_code = self.get_indent() + f"{head_code} {{\n"
         self.indent_level += 1
 
         local_vars = self.visit(ctx.block().declarations())
@@ -164,6 +226,11 @@ class CodeGeneratorVisitor(PascalVisitor):
 
         body = self.visit(ctx.block().compoundStatement())
         if body: c_code += body
+
+        if is_function and not self.function_has_returned:
+            line = ctx.subprogramHead().IDENTIFIER().getSymbol().line
+            raise SemanticError(
+                f"Brak wartości zwracanej (Linia {line}): Funkcja '{func_name}' nie zwraca wyniku na każdej ścieżce wykonania.")
 
         self.indent_level -= 1
         c_code += self.get_indent() + "}\n"
@@ -174,7 +241,7 @@ class CodeGeneratorVisitor(PascalVisitor):
 
     def visitSubprogramHead(self, ctx: PascalParser.SubprogramHeadContext):
         name = ctx.IDENTIFIER().getText()
-        params = self.visit(ctx.formalParameterList()) if ctx.formalParameterList() else ""
+        line = ctx.IDENTIFIER().getSymbol().line
         is_function = ctx.KEYWORD_FUNCTION() is not None
         c_type = "void"
 
@@ -190,13 +257,22 @@ class CodeGeneratorVisitor(PascalVisitor):
                 elif pascal_type_ctx.TYPE_CHAR():
                     c_type = "char"
 
-        return f"{c_type} {name}({params})", is_function, name
+        params_code, param_types = "", []
+        if ctx.formalParameterList():
+            params_code, param_types = self.visit(ctx.formalParameterList())
+
+        self.symbol_table.declare_function(name, c_type, param_types, line)
+
+        return f"{c_type} {name}({params_code})", is_function, name
 
     def visitFormalParameterList(self, ctx: PascalParser.FormalParameterListContext):
         params = []
+        param_types = []
         for group in ctx.formalParameterGroup():
-            params.extend(self.visit(group))
-        return ", ".join(params)
+            g_params, g_types = self.visit(group)
+            params.extend(g_params)
+            param_types.extend(g_types)
+        return ", ".join(params), param_types
 
     def visitFormalParameterGroup(self, ctx: PascalParser.FormalParameterGroupContext):
         pascal_type_ctx = ctx.type_().simpleType()
@@ -210,14 +286,15 @@ class CodeGeneratorVisitor(PascalVisitor):
                 c_type = "char"
 
         params = []
+        param_types = []
         for ident in ctx.identifierList().IDENTIFIER():
             name = ident.getText()
             self.symbol_table.declare_variable(name, c_type, ident.getSymbol().line)
             params.append(f"{c_type} {name}")
-        return params
+            param_types.append(c_type)
+        return params, param_types
 
     # --- Przetwarzanie Instrukcji ---
-
     def visitCompoundStatement(self, ctx: PascalParser.CompoundStatementContext):
         statements_code = ""
         if ctx.statementList():
@@ -231,23 +308,36 @@ class CodeGeneratorVisitor(PascalVisitor):
         comments = self.get_comments_before(ctx)
         if ctx.getChildCount() == 0: return comments
 
-        child_ctx = ctx.getChild(0)
-        code = self.visit(child_ctx)
-
-        if code is None:
-            code = ""
-
+        code = self.visit(ctx.getChild(0)) or ""
         if ctx.procedureCall():
             return comments + code + ";"
         return comments + code
 
     def visitAssignmentStatement(self, ctx: PascalParser.AssignmentStatementContext):
         var_name = self.visit(ctx.variable())
-        expr = self.visit(ctx.expression())
+        expr_code = self.visit(ctx.expression())
+
+        line = ctx.variable().IDENTIFIER().getSymbol().line
+        inferred_expr_type = self.infer_type(ctx.expression())
 
         if self.current_function and var_name.lower() == self.current_function.lower():
-            return f"return {expr};"
-        return f"{var_name} = {expr};"
+            expected_type = self.symbol_table.get_function_info(self.current_function, line)['return_type']
+            self.symbol_table.check_type_compatibility(expected_type, inferred_expr_type, line,
+                                                       "Zwracanie wartości funkcji")
+
+            self.function_has_returned = True
+            return f"return {expr_code};"
+
+        else:
+            clean_var_name = ctx.variable().IDENTIFIER().getText()
+            expected_type = self.symbol_table.get_variable_type(clean_var_name, line)
+
+            if ctx.variable().expression():
+                expected_type = expected_type.replace("_array", "")
+
+            self.symbol_table.check_type_compatibility(expected_type, inferred_expr_type, line,
+                                                       f"Przypisanie do '{clean_var_name}'")
+            return f"{var_name} = {expr_code};"
 
     def visitVariable(self, ctx: PascalParser.VariableContext):
         var_name = ctx.IDENTIFIER().getText()
@@ -264,33 +354,38 @@ class CodeGeneratorVisitor(PascalVisitor):
 
     def visitIfStatement(self, ctx: PascalParser.IfStatementContext):
         cond = self.visit(ctx.expression())
-        stmt_true = self.visit(ctx.statement(0))
-        c_code = f"if ({cond}) {{\n{self.get_indent()}    {stmt_true}\n{self.get_indent()}}}"
+
+        stmt_true = self.format_statement_body(ctx.statement(0))
+        c_code = f"if ({cond}) {{{stmt_true}}}"
 
         if ctx.KEYWORD_ELSE():
-            stmt_false = self.visit(ctx.statement(1))
-            c_code += f" else {{\n{self.get_indent()}    {stmt_false}\n{self.get_indent()}}}"
+            stmt_false = self.format_statement_body(ctx.statement(1))
+            c_code += f" else {{{stmt_false}}}"
+
         return c_code
 
     def visitWhileStatement(self, ctx: PascalParser.WhileStatementContext):
         cond = self.visit(ctx.expression())
-        stmt = self.visit(ctx.statement())
-        return f"while ({cond}) {{\n{self.get_indent()}    {stmt}\n{self.get_indent()}}}"
+        body = self.format_statement_body(ctx.statement())
+        return f"while ({cond}) {{{body}}}"
 
     def visitForStatement(self, ctx: PascalParser.ForStatementContext):
         var_name = ctx.IDENTIFIER().getText()
         start_expr = self.visit(ctx.expression(0))
         end_expr = self.visit(ctx.expression(1))
-        stmt = self.visit(ctx.statement())
-        return f"for ({var_name} = {start_expr}; {var_name} <= {end_expr}; {var_name}++) {{\n{self.get_indent()}    {stmt}\n{self.get_indent()}}}"
+        body = self.format_statement_body(ctx.statement())
+        return f"for ({var_name} = {start_expr}; {var_name} <= {end_expr}; {var_name}++) {{{body}}}"
 
     def visitRepeatStatement(self, ctx: PascalParser.RepeatStatementContext):
         cond = self.visit(ctx.expression())
         stmts_code = ""
-        for stmt in ctx.statementList().statement():
-            stmt_code = self.visit(stmt)
-            if stmt_code:
-                stmts_code += self.get_indent() + "    " + stmt_code + "\n"
+        self.indent_level += 1
+        if ctx.statementList():
+            for stmt in ctx.statementList().statement():
+                stmt_code = self.visit(stmt)
+                if stmt_code:
+                    stmts_code += self.get_indent() + stmt_code + "\n"
+        self.indent_level -= 1
         return f"do {{\n{stmts_code}{self.get_indent()}}} while (!({cond}));"
 
     def visitCaseStatement(self, ctx: PascalParser.CaseStatementContext):
@@ -310,7 +405,12 @@ class CodeGeneratorVisitor(PascalVisitor):
 
         self.indent_level += 1
         stmt = self.visit(ctx.statement())
-        if stmt: c_code += self.get_indent() + f"{stmt}\n"
+        if stmt:
+            is_compound = ctx.statement().compoundStatement() is not None
+            if is_compound:
+                c_code += stmt
+            else:
+                c_code += self.get_indent() + f"{stmt}\n"
         c_code += self.get_indent() + "break;\n"
         self.indent_level -= 1
         return c_code
@@ -318,32 +418,62 @@ class CodeGeneratorVisitor(PascalVisitor):
     def visitProcedureCall(self, ctx: PascalParser.ProcedureCallContext):
         name = ctx.IDENTIFIER().getText()
         u_name = name.upper()
+        line = ctx.IDENTIFIER().getSymbol().line
+
+        # ZABEZPIECZENIE: Zwróć zmienną, jeśli parser błędnie sklasyfikował ją jako funkcję
+        if not ctx.PUNCT_LPAREN() and self.symbol_table.is_variable(name):
+            return name
+
         args_list = []
+        args_types = []
         if ctx.argumentList():
             args_list = [str(self.visit(e)).strip() for e in ctx.argumentList().expression()]
+            args_types = [self.infer_type(e) for e in ctx.argumentList().expression()]
 
+        func_info = self.symbol_table.get_function_info(name, line)
+        if func_info['params'] != "any":
+            expected_args = func_info['params']
+            if len(expected_args) != len(args_types):
+                raise SemanticError(
+                    f"Nieprawidłowa liczba argumentów (Linia {line}): Wywołano '{name}' z {len(args_types)} argumentami, oczekiwano {len(expected_args)}.")
+
+            for i, (exp, act) in enumerate(zip(expected_args, args_types)):
+                self.symbol_table.check_type_compatibility(exp, act, line, f"Argument nr {i + 1} funkcji '{name}'")
+
+        if u_name == "LENGTH": return f"strlen({args_list[0]})"
+        if u_name == "CONCAT": return f"_concat({args_list[0]}, {args_list[1]})"
         if u_name == "RANDOMIZE": return "srand(time(NULL))"
         if u_name == "RANDOM": return f"(rand() % {args_list[0]})" if args_list else "rand()"
 
         if u_name in ["WRITE", "WRITELN"]:
             if not args_list: return 'printf("\\n")'
             format_str, vars_list = "", []
-            for arg in args_list:
+            for arg, arg_type in zip(args_list, args_types):
                 if arg.startswith('"') and arg.endswith('"'):
                     format_str += arg[1:-1]
+                elif arg_type == "float":
+                    format_str += "%f "; vars_list.append(arg)
+                elif arg_type == "char":
+                    format_str += "%c "; vars_list.append(arg)
+                elif arg_type == "string":
+                    format_str += "%s "; vars_list.append(arg)
                 else:
-                    format_str += "%d "
-                    vars_list.append(arg)
+                    format_str += "%d "; vars_list.append(arg)
             if u_name == "WRITELN": format_str = format_str.rstrip() + "\\n"
             return f'printf("{format_str}"{", " + ", ".join(vars_list) if vars_list else ""})'
 
         if u_name in ["READ", "READLN"]:
             if not args_list: return 'getchar()'
             format_mask = ""
-            for arg in args_list:
-                clean_name = arg.split('[')[0]
-                v_type = self.symbol_table.get_variable_type(clean_name, ctx.IDENTIFIER().getSymbol().line)
-                format_mask += "%f " if v_type == "float" else "%c " if v_type == "char" else "%d "
+            for arg, arg_type in zip(args_list, args_types):
+                if arg_type == "float":
+                    format_mask += "%f "
+                elif arg_type == "char":
+                    format_mask += "%c "
+                elif arg_type == "string":
+                    format_mask += "%s "
+                else:
+                    format_mask += "%d "
             c_args = ", ".join([f"&{arg}" for arg in args_list])
             return f'scanf("{format_mask.strip()}", {c_args})'
 
@@ -353,7 +483,6 @@ class CodeGeneratorVisitor(PascalVisitor):
         return f"{name}({args_str})"
 
     # --- Wyrażenia ---
-
     def visitExpression(self, ctx: PascalParser.ExpressionContext):
         left = self.visit(ctx.simpleExpression(0))
         if ctx.REL_OP():
@@ -391,6 +520,23 @@ class CodeGeneratorVisitor(PascalVisitor):
 
     def defaultResult(self):
         return ""
+
+    def format_statement_body(self, stmt_ctx):
+        self.indent_level += 1
+        stmt_code = self.visit(stmt_ctx) or ""
+
+        is_compound = stmt_ctx.compoundStatement() is not None
+        if is_compound:
+            self.indent_level -= 1
+            return f"\n{stmt_code}{self.get_indent()}" if stmt_code else f"\n{self.get_indent()}"
+        else:
+            if not stmt_code.strip():
+                self.indent_level -= 1
+                return f"\n{self.get_indent()}"
+            formatted = f"\n{self.get_indent()}{stmt_code}\n"
+            self.indent_level -= 1
+            formatted += self.get_indent()
+            return formatted
 
 
 # ==========================================
