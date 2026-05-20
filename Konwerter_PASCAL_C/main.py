@@ -39,6 +39,7 @@ class CodeGeneratorVisitor(PascalVisitor):
         self.token_stream = token_stream
         self.processed_comments = set()
         self.symbol_table = SymbolTable()
+        self.uses_concat = False
 
     def get_indent(self):
         return "    " * self.indent_level
@@ -131,6 +132,12 @@ class CodeGeneratorVisitor(PascalVisitor):
     def visitProgram(self, ctx: PascalParser.ProgramContext):
         program_name = ctx.IDENTIFIER().getText()
 
+        decl_code = self.visit(ctx.block().declarations()) or ""
+
+        self.indent_level += 1
+        main_body = self.visit(ctx.block().compoundStatement()) or ""
+        self.indent_level -= 1
+
         c_code = f"// Wygenerowano z programu: {program_name}\n"
         c_code += "#include <stdio.h>\n"
         c_code += "#include <stdlib.h>\n"
@@ -138,20 +145,19 @@ class CodeGeneratorVisitor(PascalVisitor):
         c_code += "#include <string.h>\n"
         c_code += "#include <time.h>\n\n"
 
-        c_code += "/* Helper do obslugi tekstow z Pascala */\n"
-        c_code += "char* _concat(const char* s1, const char* s2) {\n"
-        c_code += "    char* res = (char*)malloc(strlen(s1) + strlen(s2) + 1);\n"
-        c_code += "    strcpy(res, s1); strcat(res, s2); return res;\n}\n\n"
+        if self.uses_concat:
+            c_code += "/* Helper do obslugi tekstow z Pascala */\n"
+            c_code += "char* _concat(const char* s1, const char* s2) {\n"
+            c_code += "    char* res = (char*)malloc(strlen(s1) + strlen(s2) + 1);\n"
+            c_code += "    strcpy(res, s1); strcat(res, s2); return res;\n}\n\n"
 
-        c_code += self.visit(ctx.block().declarations()) or ""
+        c_code += decl_code
 
         c_code += "\nint main(int argc, char *argv[]) {\n"
-        self.indent_level += 1
 
-        c_code += self.visit(ctx.block().compoundStatement()) or ""
+        c_code += main_body
 
         c_code += self.get_indent() + "return 0;\n"
-        self.indent_level -= 1
         c_code += "}\n"
 
         return c_code
@@ -441,7 +447,9 @@ class CodeGeneratorVisitor(PascalVisitor):
                 self.symbol_table.check_type_compatibility(exp, act, line, f"Argument nr {i + 1} funkcji '{name}'")
 
         if u_name == "LENGTH": return f"strlen({args_list[0]})"
-        if u_name == "CONCAT": return f"_concat({args_list[0]}, {args_list[1]})"
+        if u_name == "CONCAT":
+            self.uses_concat = True
+            return f"_concat({args_list[0]}, {args_list[1]})"
         if u_name == "RANDOMIZE": return "srand(time(NULL))"
         if u_name == "RANDOM": return f"(rand() % {args_list[0]})" if args_list else "rand()"
 
@@ -514,7 +522,18 @@ class CodeGeneratorVisitor(PascalVisitor):
         if ctx.variable(): return self.visit(ctx.variable())
         if ctx.NUMBER(): return ctx.NUMBER().getText()
         if ctx.BOOLEAN_CONST(): return "true" if ctx.BOOLEAN_CONST().getText().upper() == "TRUE" else "false"
-        if ctx.STRING(): return f'"{ctx.STRING().getText()[1:-1]}"'
+        if ctx.STRING():
+            text = ctx.STRING().getText()
+            if len(text) == 3:
+                return f"'{text[1:-1]}'"
+
+            if len(text) == 4 and text == "''''":
+                return "'\\''"
+
+            inner_text = text[1:-1]
+            inner_text = inner_text.replace('"', '\\"')
+            inner_text = inner_text.replace("''", "'")
+            return f'"{inner_text}"'
         if ctx.expression(): return f"({self.visit(ctx.expression())})"
         return ""
 

@@ -5,12 +5,6 @@
 #include <string.h>
 #include <time.h>
 
-/* Helper do obslugi tekstow z Pascala */
-char* _concat(const char* s1, const char* s2) {
-    char* res = (char*)malloc(strlen(s1) + strlen(s2) + 1);
-    strcpy(res, s1); strcat(res, s2); return res;
-}
-
 int global_x;
 
 void OuterProc(int param_a) {
@@ -42,5 +36,5 @@ int main(int argc, char *argv[]) {
     global_x = 100;
     printf("Uruchamiam program glowny...\n");
     OuterProc(2);
-    return 0;
+return 0;
 }
