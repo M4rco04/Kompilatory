@@ -1,6 +1,7 @@
 from utility.skaner import Skaner
 from utility.html_generator import HtmlGenerator
 import sys
+import os
 
 
 def main():
@@ -36,9 +37,16 @@ def main():
     skaner = Skaner(expression)
 
     try:
+        output_dir = "colored"
+        os.makedirs(output_dir, exist_ok=True)
+        if len(sys.argv) > 1:
+            output_file = os.path.join(output_dir, f"pokolorowany_kod_{sys.argv[1]}.html")
+        else:
+            output_file = os.path.join(output_dir, f"pokolorowany_kod.html")
+
         skaner.loop()
         generator = HtmlGenerator(skaner.tokens)
-        generator.generate("pokolorowany_kod.html")
+        generator.generate(output_file)
     except Exception as e:
         print(f"Błąd podczas skanowania: {e}")
 
