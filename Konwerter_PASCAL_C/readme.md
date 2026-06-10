@@ -35,6 +35,21 @@ Program ma za zadanie:
 
 ---
 
+## 🖥️ Interfejs Graficzny (GUI)
+
+Aplikacja jest wyposażona w nowoczesny interfejs graficzny zbudowany przy pomocy biblioteki **CustomTkinter**, który w wygodny sposób opakowuje proces kompilacji i udostępnia dodatkowe funkcjonalności.
+
+### Główne cechy interfejsu:
+* **Dwupanelowy widok:** Po lewej stronie znajduje się interaktywny edytor kodu Pascala, a po prawej okno z wygenerowanym kodem w języku C. Pozwala to na natychmiastowe sprawdzanie wyników translacji w czasie rzeczywistym.
+* **Autorski komponent `CodeEditor`:** * Wbudowana **synchronizowana numeracja wierszy**, która skaluje się wraz z rozmiarem pliku (ułatwiająca śledzenie błędów zgłaszanych przez kompilator).
+  * Oparty na wyrażeniach regularnych (Regex) moduł **kolorowania składni** – dynamicznie podświetla słowa kluczowe (zarówno dla Pascala, jak i C), stringi oraz komentarze, co znacząco poprawia czytelność kodu.
+* **Wbudowana konsola statusu:** Dolny panel GUI działa jako *Log output*. Bezpośrednio przechwytuje wyjątki zgłaszane przez nasz kompilator i wyświetla dokładne komunikaty błędów z systemu `error_handler.py` (np. nieistniejące zmienne, niezgodności typów czy błędy w konkretnych liniach kodu).
+* **Zarządzanie plikami:** Możliwość załadowania pliku `.pas` bezpośrednio z dysku oraz łatwy zapis wygenerowanego kodu źródłowego `.c`.
+* **Asynchroniczność:** Proces kompilacji uruchamiany jest w osobnym wątku (`threading.Thread`), dzięki czemu interfejs graficzny nigdy się nie "zawiesza" (freezing) – nawet podczas analizy bardziej rozbudowanych programów.
+
+---
+
+
 ### 📦 Planowany wynik działania programu
 Konwerter Pascala do C.
 Wynikiem działania programu będzie plik tekstowy o rozszerzeniu `.c`, który po kompilacji standardowym kompilatorem (np. **GCC**) zachowa semantykę oryginalnego programu napisanego w Pascalu.
